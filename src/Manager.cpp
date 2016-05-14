@@ -86,14 +86,14 @@ void Manager::watchSystem()
 
 		if(isIdle)
 		{
-			cout << "System is idle (" << idleTimer << ")." << endl;
+			cout << "System is idle (" << idleTimer << ").\n";
 
 			notIdleTimer = 0;
 			++idleTimer;
 		}
 		else
 		{
-			cout << "System is not idle (" << notIdleTimer << ")." << endl;
+			cout << "System is not idle (" << notIdleTimer << ").\n";
 
 			++notIdleTimer;
 
@@ -101,7 +101,7 @@ void Manager::watchSystem()
 			if( (notIdleTimer * m_checkIfIdleEvery) > m_resetMonitoringAfter)
 			{
 				cout << "System was busy for more than " << m_resetMonitoringAfter
-					 << " mins, reseting idle timer." << endl;
+					 << " mins, reseting idle timer.\n";
 
 				idleTimer = 0;
 				notIdleTimer = 0;
@@ -113,7 +113,7 @@ void Manager::watchSystem()
 		{
 	        cout << "system was idle for more than "
 				 << m_suspendAfter
-				 << " mins, will suspend the machine." << endl;
+				 << " mins, will suspend the machine.\n";
 
 			idleTimer = 0;
 			notIdleTimer = 0;
@@ -123,18 +123,25 @@ void Manager::watchSystem()
 			suspendServer();
 		}
 
-		sleep(m_checkIfIdleEvery);
+		sleep(m_checkIfIdleEvery * 60);
 	}
 }
 
 bool Manager::isSystemIdle()
 {
-	double cpuLoad     = m_monitor.getCpuLoad();
-	double storageLoad = m_monitor.getStorageLoad();
+	double cpuLoad;
+	m_monitor.getCpuLoad(&cpuLoad);
+
+	double storageLoad, storageRead, storageWritten;
+	m_monitor.getStorageLoad(&storageLoad, &storageRead, &storageWritten);
 
 	bool isIdle = m_suspendIfCpuIdle || m_suspendIfStorageIdle;
 
-	cout << "Average CPU load: "     << cpuLoad     << " %." << endl;
+	cout << "Average CPU usage: load - "      << cpuLoad     << "%." << "\n";
+
+	cout << "Average Storage usage (across all monitored drives): load - "
+	     << storageLoad << "%, totalRead - " << storageRead << "KB/s, totalWritten - "
+	     << storageWritten << "KB/s.\n";
 
 	if(cpuLoad > CPU_LIMIT)
 	{
@@ -143,28 +150,26 @@ bool Manager::isSystemIdle()
 			isIdle = false;
 		}
 
-		cout << "CPU     -- busy." << endl;
+		cout << "CPU     -- busy.\n";
 	}
 	else
 	{
-		cout << "CPU     -- idle." << endl;
+		cout << "CPU     -- idle.\n";
 	}
 
-
-	cout << "Average Storage load (across all monitored drives): " << storageLoad << " KB/s." << endl;
-
-	if(storageLoad > STORAGE_LIMIT)
+	if( (storageLoad > STORAGE_LOAD_LIMIT) ||
+	    (storageRead + storageWritten) > STORAGE_READ_WRITE_LIMIT)
 	{
 		if(m_suspendIfStorageIdle)
 		{
 			isIdle = false;
 		}
 
-		cout << "Storage -- busy." << endl;
+		cout << "Storage -- busy.\n";
 	}
 	else
 	{
-		cout << "Storage -- idle." << endl;
+		cout << "Storage -- idle.\n";
 	}
 
 	return isIdle;
@@ -227,8 +232,8 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 		secondsToSleep = (until + (TOTAL_MINUTS_IN_DAY - currentTimeInMinutes) - 5) * 60;
 	}
 
-	cout << "Got: currentTimeInMinutes (" << currentTimeInMinutes << "), until(" << until << ")." << endl;
-	cout << "Suspending server for " << secondsToSleep << " seconds." << endl;
+	cout << "Got: currentTimeInMinutes (" << currentTimeInMinutes << "), until(" << until << ").\n";
+	cout << "Suspending server for " << secondsToSleep << " seconds.\n";
 
 	vector<string> output;
 
@@ -243,7 +248,7 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 		cout << output[i] << " , ";
 	}
 
-	cout << endl;
+	cout << "\n";
 }
 
 void Manager::rtcWakeSuspend(double secondsToSleep, vector<string> *output)

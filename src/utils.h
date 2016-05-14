@@ -19,6 +19,7 @@ void printHeaderMessage(const string &message, bool logTime);
 void splitByEmptySpace(const string &input, vector<string> *output);
 bool runSystemCommand(const string &command, vector<string> *output = 0);
 double getDoubleFromSystemCall(const string &command);
+double roundValue(double value);
 string trimString(string input);
 void splitStringByDelimiter(vector<string> *output,
 		                    const string &input,

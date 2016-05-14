@@ -145,6 +145,11 @@ double getDoubleFromSystemCall(const string &command)
 	return value;
 }
 
+double roundValue(double value)
+{
+	return floor( value * 100.00 + 0.5 ) / 100.00;
+}
+
 void splitStringByDelimiter(vector<string> *output,
 		                    const string &input,
 		                    const string &delimiter)

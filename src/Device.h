@@ -11,6 +11,7 @@
 #include <memory>
 
 #include "WatchDog.h"
+#include "constants.h"
 #include "utils.h"
 
 using namespace std;
@@ -51,6 +52,7 @@ protected:
 	void isDeviceInitialized(bool initialized);
 	bool shouldStillMonitor();
 	void setMonitoringState(bool monitoringState);
+	void copyDeviceUsage(const DeviceUsage &input, DeviceUsage *output);
 	void resetUsage(DeviceUsage *deviceUsage);
 	double updateAverageValue(double currentAverageValue, double currentValue);
 	void updateAverageUsage(const DeviceUsage &deviceUsage);

@@ -21,8 +21,8 @@ private:
 public:
 	Monitor();
 	~Monitor();
-	double getCpuLoad();
-	double getStorageLoad();
+	void getCpuLoad(double *cpuUsage);
+	void getStorageLoad(double *storageLoad, double *storageRead, double *storageWritten);
 	bool areClientsConnected(const vector<string> &clients);
 	bool isIpAddressOnline(const string &ipAddress);
 	void monitorSystemUsage(const vector<string> &disks,

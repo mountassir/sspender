@@ -8,7 +8,7 @@ namespace
 
 		while(watchDog->shouldStillMonitor())
 		{
-			DeviceUsage cpuUsage (0, 0, 0);
+			DeviceUsage cpuUsage = {0, 0, 0};
 
 			deviceToMonitor->calculateUsage(statesFile, &cpuUsage);
 
@@ -39,7 +39,7 @@ void Cpu::calculateUsage(ifstream &statesFile, DeviceUsage *cpuUsage)
 
 	sumCpuJiffies(fileOutput1, &workJiffies1, &totalJiffies1);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+	std::this_thread::sleep_for(std::chrono::milliseconds(MONITORING_THREAD_FREQUENCY));
 
 	vector<string> fileOutput2;
 	parseFile(statesFile, &fileOutput2);

@@ -8,7 +8,7 @@ namespace
 
 		while(watchDog->shouldStillMonitor())
 		{
-			DeviceUsage diskUsage (0, 0, 0);
+			DeviceUsage diskUsage = {0, 0, 0};
 
 			deviceToMonitor->calculateUsage(statesFile, &diskUsage);
 
@@ -32,18 +32,15 @@ void Disk::monitorUsage()
 
 void Disk::calculateUsage(ifstream &statesFile, DeviceUsage *diskUsage)
 {
-	int prevNumOfReadSectors = 0, prevNumOfWroteSectors = 0;
-
 	DiskStats prevDiskStates, newDiskStates;
 
 	getDiskStats( statesFile, &prevDiskStates);
 
-	std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
-	int currentNumOfReadSectors = 0, currentNumOfWroteSectors = 0;
+	std::this_thread::sleep_for(std::chrono::milliseconds(MONITORING_THREAD_FREQUENCY));
 
 	getDiskStats( statesFile, &newDiskStates);
 
+	diskUsage->load = ( (newDiskStates.time_io_ticks - prevDiskStates.time_io_ticks) / MONITORING_THREAD_FREQUENCY ) * 100;
 	diskUsage->totalRead = ( (newDiskStates.num_r_sectors - prevDiskStates.num_r_sectors) * m_sectorSize ) / 1000;
 	diskUsage->totalWritten = ( (newDiskStates.num_w_sectors - prevDiskStates.num_w_sectors) * m_sectorSize ) / 1000;
 }

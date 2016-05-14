@@ -3,19 +3,27 @@
 namespace
 {
 	template <typename T>
-	inline double sumDevicesUsage (const vector<T> &devices)
+	inline void sumDevicesUsage (const vector<T> &devices,
+			                     DeviceUsage *totalUsage,
+			                     DeviceUsage *averageUsage)
 	{
-		double totalUsage = 0;
+		size_t numberOfDevices = devices.size();
 
-		for(size_t i = 0, len = devices.size(); i < len; ++i)
+		for(size_t i = 0; i < numberOfDevices; ++i)
 		{
-			DeviceUsage deviceUsage (0, 0, 0);
+			DeviceUsage deviceUsage = {0, 0, 0};
 
-			totalUsage += devices[i]->getAvrgUsage();
+			devices[i]->getAvrgUsage(&deviceUsage);
 			devices[i]->resetUsage();
+
+			totalUsage->load         += deviceUsage.load;
+			totalUsage->totalRead    += deviceUsage.totalRead;
+			totalUsage->totalWritten += deviceUsage.totalWritten;
 		}
 
-		return totalUsage;
+		averageUsage->load         += totalUsage->load / numberOfDevices;
+		averageUsage->totalRead    += totalUsage->totalRead / numberOfDevices;
+		averageUsage->totalWritten += totalUsage->totalWritten / numberOfDevices;
 	}
 }
 
@@ -53,18 +61,26 @@ void Monitor::monitorSystemUsage(const vector<string> &disks,
 	}
 }
 
-double Monitor::getCpuLoad()
+void Monitor::getCpuLoad(double *cpuUsage)
 {
-	double totalDiskUsage = sumDevicesUsage(m_cpusToMonitor);
+	DeviceUsage totalUsage = {0, 0, 0};
+	DeviceUsage averageUsage = {0, 0, 0};
 
-	return totalDiskUsage;
+	sumDevicesUsage(m_cpusToMonitor, &totalUsage, &averageUsage);
+
+	*cpuUsage = roundValue(averageUsage.load);
 }
 
-double Monitor::getStorageLoad()
+void Monitor::getStorageLoad(double *storageLoad, double *storageRead, double *storageWritten)
 {
-	double totalCpuUsage = sumDevicesUsage(m_disksToMonitor);
+	DeviceUsage totalUsage = {0, 0, 0};
+	DeviceUsage averageUsage = {0, 0, 0};
 
-	return totalCpuUsage;
+	sumDevicesUsage(m_disksToMonitor, &totalUsage, &averageUsage);
+
+	*storageLoad    = roundValue(averageUsage.load);
+	*storageRead    = roundValue(averageUsage.totalRead);
+	*storageWritten = roundValue(averageUsage.totalWritten);
 }
 
 bool Monitor::areClientsConnected(const vector<string> &clients)

@@ -49,14 +49,21 @@ void Device::getCurrentUsage(DeviceUsage *deviceUsage)
 {
 	std::lock_guard<mutex> locker(m_mutex);
 
-	return m_currentUsage;
+	copyDeviceUsage(m_currentUsage, deviceUsage);
 }
 
 void Device::getAvrgUsage(DeviceUsage *deviceUsage)
 {
 	std::lock_guard<mutex> locker(m_mutex);
 
-	return m_avrgUsage;
+	copyDeviceUsage(m_avrgUsage, deviceUsage);
+}
+
+void Device::copyDeviceUsage(const DeviceUsage &input, DeviceUsage *output)
+{
+	output->load = input.load;
+	output->totalRead = input.totalRead;
+	output->totalWritten = input.totalWritten;
 }
 
 void Device::resetUsage()
