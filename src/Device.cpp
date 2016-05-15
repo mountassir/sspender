@@ -117,7 +117,7 @@ void Device::updateAverageUsage(const DeviceUsage &deviceUsage)
 
 double Device::updateAverageValue(double currentAverageValue, double currentValue)
 {
-	double newAverageValue;
+	double newAverageValue =0 ;
 
 	if(currentAverageValue == 0)
 	{
