@@ -16,10 +16,11 @@
  * along with sspender.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONFIG_H_
-#define CONFIG_H_
+#ifndef CONFIGPARSER_H_
+#define CONFIGPARSER_H_
 
 #include <config4cpp/Configuration.h>
+#include <libconfig.h++>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -29,8 +30,9 @@
 
 using namespace config4cpp;
 using namespace std;
+using namespace libconfig;
 
-class Config
+class ConfigParser
 {
 public:
 	bool loadConfigs(const string &filePath,

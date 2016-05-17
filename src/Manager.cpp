@@ -258,6 +258,8 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 	rtcWakeSuspend(secondsToSleep, &output);
 	//pmUtilSuspend(secondsToSleep, &output);
 
+	//todo execute script after resume
+
 	printHeaderMessage("System returned from suspend", true);
 	cout << "Suspend output: ";
 

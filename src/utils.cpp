@@ -71,6 +71,7 @@ bool convertTimeToMinutes(string time, double *totalMinutes)
 bool getCurremtTimeInMinutes(double *totalMinutes)
 {
 	vector<string> dateOutput;
+	//todo no need to run command, get the time here
 	runSystemCommand("date +%R", &dateOutput);
 
 	bool gotTimeInMinutes = convertTimeToMinutes(dateOutput[0], totalMinutes);

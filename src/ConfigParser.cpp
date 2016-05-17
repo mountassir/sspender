@@ -16,7 +16,7 @@
  * along with sspender.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Config.h"
+#include "ConfigParser.h"
 
 #include <sstream>
 #include <vector>
@@ -121,7 +121,7 @@ namespace
 	}
 }
 
-bool Config::loadConfigs(const string &filePath,
+bool ConfigParser::loadConfigs(const string &filePath,
                          vector<string> *ipToWatch,
                          vector<string> *disksToMonitor,
                          vector<string> *disksToSpinDown,
@@ -173,8 +173,8 @@ bool Config::loadConfigs(const string &filePath,
 
 	printHeaderMessage("Loaded configuration from file = " + filePath, false);
 
-	cout << "suspend_if_cpu_idle = "              << suspend_if_cpu_idle      << "\n"
-		 << "suspend_if_storage_idle = "          << suspend_if_storage_idle  << "\n"
+	cout << "suspend_if_cpu_idle = "              << (*suspend_if_cpu_idle ? "true" : "false")      << "\n"
+		 << "suspend_if_storage_idle = "          << (*suspend_if_storage_idle  ? "true" : "false") << "\n"
 	     << "ips_to_watch = "                     << ips_to_watch             << "\n"
 		 << "disks_to_monitor = "                 << disks_to_monitor         << "\n"
 		 << "disks_to_spin_down = "               << disks_to_spin_down       << "\n"
@@ -202,7 +202,7 @@ bool Config::loadConfigs(const string &filePath,
 	return true;
 }
 
-bool Config::loockupFieldInCfgFile(Configuration *cfg,
+bool ConfigParser::loockupFieldInCfgFile(Configuration *cfg,
 								   const char *scope,
 								   const char *fieldName,
 								   const char **output,
@@ -225,7 +225,7 @@ bool Config::loockupFieldInCfgFile(Configuration *cfg,
 	return true;
 }
 
-bool Config::loockupFieldInCfgFile(Configuration *cfg,
+bool ConfigParser::loockupFieldInCfgFile(Configuration *cfg,
 								   const char *scope,
 								   const char *fieldName,
 								   int *output,
@@ -248,7 +248,7 @@ bool Config::loockupFieldInCfgFile(Configuration *cfg,
 	return true;
 }
 
-bool Config::loockupFieldInCfgFile(Configuration *cfg,
+bool ConfigParser::loockupFieldInCfgFile(Configuration *cfg,
 								   const char *scope,
 								   const char *fieldName,
 								   bool *output,
@@ -263,7 +263,7 @@ bool Config::loockupFieldInCfgFile(Configuration *cfg,
 	catch(const ConfigurationException & ex)
 	{
 		cout << ex.c_str() << endl;
-		cout << "using default value '" << defaultValue << "' for " << fieldName << endl;
+		cout << "using default value '" << (defaultValue ? "true" : "false") << "' for " << fieldName << endl;
 		*output = defaultValue;
 		return false;
 	}
@@ -271,7 +271,7 @@ bool Config::loockupFieldInCfgFile(Configuration *cfg,
 	return true;
 }
 
-string Config::charTostring(const char *input)
+string ConfigParser::charTostring(const char *input)
 {
 	ostringstream oss;
 
@@ -280,7 +280,7 @@ string Config::charTostring(const char *input)
 	return oss.str();
 }
 
-void Config::parseMultiCoiceSupportingAll(const char *input,
+void ConfigParser::parseMultiCoiceSupportingAll(const char *input,
 										  vector<string> *output,
 										  vector<string> allAvailableOptions,
 										  bool (*validator)(const string &))
@@ -315,7 +315,7 @@ void Config::parseMultiCoiceSupportingAll(const char *input,
 	}
 }
 
-void Config::parseMultiCoiceArgs(const char *input,
+void ConfigParser::parseMultiCoiceArgs(const char *input,
 		                         vector<string> *output,
 		                         bool (*validator)(const string &))
 {
@@ -336,7 +336,7 @@ void Config::parseMultiCoiceArgs(const char *input,
 	}
 }
 
-void Config::parseSleepMode(const char *inputSleepMode, SLEEP_MODE *sleepMode)
+void ConfigParser::parseSleepMode(const char *inputSleepMode, SLEEP_MODE *sleepMode)
 {
 	string trimedInput = trimString(charTostring(inputSleepMode));
 

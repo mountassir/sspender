@@ -17,7 +17,7 @@
  */
 
 #include "Manager.h"
-#include "Config.h"
+#include "ConfigParser.h"
 
 using namespace std;
 
@@ -39,7 +39,7 @@ int main(int argc, char *argv[])
     bool suspend_if_cpu_idle;
     bool suspend_if_storage_idle;
 
-	Config configParser;
+	ConfigParser configParser;
 	Manager manager;
 
 	bool configParsed = configParser.loadConfigs(filePath,
