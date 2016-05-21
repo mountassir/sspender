@@ -236,3 +236,12 @@ void parseFile(ifstream &file, vector<string>* fileOutput)
 		cout << "ifstream is not open!!" << endl;
 	}
 }
+
+string charTostring(const char *input)
+{
+	ostringstream oss;
+
+	oss << input;
+
+	return oss.str();
+}

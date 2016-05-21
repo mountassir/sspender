@@ -134,39 +134,44 @@ bool ConfigParser::loadConfigs(const string &filePath,
 						 int *reset_monitoring_after,
 						 int *suspend_after)
 {
-	Configuration *  cfg = Configuration::create();
+	libconfig::Config cfg;
 
-	const char *scope = "";
+	cfg.setAutoConvert(false);
+
+	if(!readFile(cfg, filePath))
+	{
+		return false;
+	}
+
+	const Setting& root = cfg.getRoot();
+
 	const char *configFile = filePath.c_str();
 
-	const char *ips_to_watch;
-	const char *disks_to_monitor;
-	const char *disks_to_spin_down;
-	const char *wake_at;
-	const char *sleep_mode;
+	string ips_to_watch;
+	string disks_to_monitor;
+	string disks_to_spin_down;
+	string wake_at;
+	string sleep_mode;
 
 	printHeaderMessage("Reading config file = " + filePath, false);
 
 	try
 	{
-		cfg->parse(configFile);
-
-		loockupFieldInCfgFile(cfg, scope, "ips_to_watch",           &ips_to_watch,           "");
-		loockupFieldInCfgFile(cfg, scope, "disks_to_monitor",       &disks_to_monitor,       "all");
-		loockupFieldInCfgFile(cfg, scope, "disks_to_spin_down",     &disks_to_spin_down,     "");
-		loockupFieldInCfgFile(cfg, scope, "wake_at",                &wake_at,                "");
-		loockupFieldInCfgFile(cfg, scope, "sleep_mode",             &sleep_mode,             "disk");
-		loockupFieldInCfgFile(cfg, scope, "check_if_idle_every",    check_if_idle_every,     1);
-		loockupFieldInCfgFile(cfg, scope, "stop_monitoring_for",    stop_monitoring_for,     5);
-		loockupFieldInCfgFile(cfg, scope, "reset_monitoring_after", reset_monitoring_after,  3);
-		loockupFieldInCfgFile(cfg, scope, "suspend_after",          suspend_after,           5);
-		loockupFieldInCfgFile(cfg, scope, "suspend_if_cpu_idle",    suspend_if_cpu_idle,     true);
-		loockupFieldInCfgFile(cfg, scope, "suspend_if_storage_idle",suspend_if_storage_idle, true);
+		loockupFieldInCfgFile(root, string("ips_to_watch"),            ips_to_watch,             string(""));
+		loockupFieldInCfgFile(root, string("disks_to_monitor"),        disks_to_monitor,         string("all"));
+		loockupFieldInCfgFile(root, string("disks_to_spin_down"),      disks_to_spin_down,       string(""));
+		loockupFieldInCfgFile(root, string("wake_at"),                 wake_at,                  string(""));
+		loockupFieldInCfgFile(root, string("sleep_mode"),              sleep_mode,               string("disk"));
+		loockupFieldInCfgFile(root, string("check_if_idle_every"),     *check_if_idle_every,     1);
+		loockupFieldInCfgFile(root, string("stop_monitoring_for"),     *stop_monitoring_for,     5);
+		loockupFieldInCfgFile(root, string("reset_monitoring_after"),  *reset_monitoring_after,  3);
+		loockupFieldInCfgFile(root, string("suspend_after"),           *suspend_after,           5);
+		loockupFieldInCfgFile(root, string("suspend_if_cpu_idle"),     *suspend_if_cpu_idle,     true);
+		loockupFieldInCfgFile(root, string("suspend_if_storage_idle"), *suspend_if_storage_idle, true);
 	}
-	catch(const ConfigurationException & ex)
+	catch(const ConfigException &configExep)
 	{
-		cout << ex.c_str() << endl;
-		cfg->destroy();
+		cout << configExep.what() << endl;
 
 		return false;
 	}
@@ -175,7 +180,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 
 	cout << "suspend_if_cpu_idle = "              << (*suspend_if_cpu_idle ? "true" : "false")      << "\n"
 		 << "suspend_if_storage_idle = "          << (*suspend_if_storage_idle  ? "true" : "false") << "\n"
-	     << "ips_to_watch = "                     << ips_to_watch             << "\n"
+		 << "ips_to_watch = "                     << ips_to_watch             << "\n"
 		 << "disks_to_monitor = "                 << disks_to_monitor         << "\n"
 		 << "disks_to_spin_down = "               << disks_to_spin_down       << "\n"
 		 << "wake_at = "                          << wake_at                  << "\n"
@@ -183,111 +188,81 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		 << "check_if_idle_every (minutes) = "    << *check_if_idle_every     << "\n"
 		 << "stop_monitoring_for (minutes) = "    << *stop_monitoring_for     << "\n"
 		 << "reset_monitoring_after (minutes) = " << *reset_monitoring_after  << "\n"
-		 << "suspend_after (minutes) = "          << *suspend_after
-		 << endl;
+		 << "suspend_after (minutes) = "          << *suspend_after           << "\n";
 
 	vector<string> allDisks, allPartitions;
 
 	getAllDisksAndPartitions(&allDisks, &allPartitions);
 
-	parseMultiCoiceSupportingAll(disks_to_monitor, disksToMonitor, allDisks, isValidDisk);
-	parseMultiCoiceSupportingAll(disks_to_spin_down, disksToSpinDown, allDisks, isValidDisk);
+	parseMultiChoiceSupportingAll(disks_to_monitor, disksToMonitor, allDisks, isValidDisk);
+	parseMultiChoiceSupportingAll(disks_to_spin_down, disksToSpinDown, allDisks, isValidDisk);
 
-	parseMultiCoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
-	parseMultiCoiceArgs(wake_at, wakeAt, isValidTime);
+	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
+	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
 	parseSleepMode(sleep_mode, sleepMode);
 
-	cfg->destroy();
-
 	return true;
 }
 
-bool ConfigParser::loockupFieldInCfgFile(Configuration *cfg,
-								   const char *scope,
-								   const char *fieldName,
-								   const char **output,
-								   const string &defaultValue)
+bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
 {
 	try
 	{
-		*output = cfg->lookupString(scope, fieldName);
-
-		cout << "Found '" << fieldName << "'" << endl;
+		cfg.readFile(filePath.c_str());
 	}
-	catch(const ConfigurationException & ex)
+	catch(const FileIOException &fioex)
 	{
-		cout << ex.c_str() << endl;
-		cout << "using default value '" << defaultValue << "' for " << fieldName << endl;
-		*output = defaultValue.c_str();
+		std::cerr << "I/O error while reading file: " << filePath << std::endl;
+
+		return false;
+	}
+	catch(const ParseException &pex)
+	{
+		std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
+		<< " - " << pex.getError() << std::endl;
+
 		return false;
 	}
 
 	return true;
 }
 
-bool ConfigParser::loockupFieldInCfgFile(Configuration *cfg,
-								   const char *scope,
-								   const char *fieldName,
-								   int *output,
-								   int defaultValue)
+template <typename T>
+void ConfigParser::loockupFieldInCfgFile(const Setting& fileRoot,
+									     const string &fieldName,
+									     T &output,
+									     const T &defaultValue)
 {
-	try
+	if(fileRoot.exists(fieldName))
 	{
-		*output = cfg->lookupInt(scope, fieldName);
+		cout << "Found '" << fieldName << "'\n";
 
-		cout << "Found '" << fieldName << "'" << endl;
+		if(!fileRoot.lookupValue(fieldName, output))
+		{
+			cout << "Failed to lookup '" << fieldName << "'\n";
+
+			ConfigException exp;
+
+			throw(exp);
+		}
 	}
-	catch(const ConfigurationException & ex)
+	else
 	{
-		cout << ex.c_str() << endl;
-		cout << "using default value '" << defaultValue << "' for " << fieldName << endl;
-		*output = defaultValue;
-		return false;
-	}
+		cout << "Could not find '" << fieldName
+			 << "', using default value '" << defaultValue << "'\n";
 
-	return true;
+		output = defaultValue;
+	}
 }
 
-bool ConfigParser::loockupFieldInCfgFile(Configuration *cfg,
-								   const char *scope,
-								   const char *fieldName,
-								   bool *output,
-								   bool defaultValue)
-{
-	try
-	{
-		*output = cfg->lookupBoolean(scope, fieldName);
-
-		cout << "Found '" << fieldName << "'" << endl;
-	}
-	catch(const ConfigurationException & ex)
-	{
-		cout << ex.c_str() << endl;
-		cout << "using default value '" << (defaultValue ? "true" : "false") << "' for " << fieldName << endl;
-		*output = defaultValue;
-		return false;
-	}
-
-	return true;
-}
-
-string ConfigParser::charTostring(const char *input)
-{
-	ostringstream oss;
-
-	oss << input;
-
-	return oss.str();
-}
-
-void ConfigParser::parseMultiCoiceSupportingAll(const char *input,
-										  vector<string> *output,
-										  vector<string> allAvailableOptions,
-										  bool (*validator)(const string &))
+void ConfigParser::parseMultiChoiceSupportingAll(const string &input,
+										         vector<string> *output,
+										         vector<string> allAvailableOptions,
+										         bool (*validator)(const string &))
 {
 	vector<string> splitString;
 
-	string trimedInput = trimString(charTostring(input));
+	string trimedInput = trimString(input);
 
 	splitStringByDelimiter(&splitString, trimedInput, CONFIG_DELIMITER);
 
@@ -315,13 +290,13 @@ void ConfigParser::parseMultiCoiceSupportingAll(const char *input,
 	}
 }
 
-void ConfigParser::parseMultiCoiceArgs(const char *input,
-		                         vector<string> *output,
-		                         bool (*validator)(const string &))
+void ConfigParser::parseMultiChoiceArgs(const string &input,
+		                                vector<string> *output,
+		                                bool (*validator)(const string &))
 {
 	vector<string> splitString;
 
-	string trimedInput = trimString(charTostring(input));
+	string trimedInput = trimString(input);
 
 	splitStringByDelimiter(&splitString, trimedInput, CONFIG_DELIMITER);
 
@@ -336,9 +311,9 @@ void ConfigParser::parseMultiCoiceArgs(const char *input,
 	}
 }
 
-void ConfigParser::parseSleepMode(const char *inputSleepMode, SLEEP_MODE *sleepMode)
+void ConfigParser::parseSleepMode(const string &inputSleepMode, SLEEP_MODE *sleepMode)
 {
-	string trimedInput = trimString(charTostring(inputSleepMode));
+	string trimedInput = trimString(inputSleepMode);
 
 	if(trimedInput.compare("mem") == 0)
 	{

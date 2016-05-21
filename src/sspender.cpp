@@ -100,15 +100,15 @@ int main(int argc, char *argv[])
 		   	    		  stop_monitoring_for,
 		   	    		  reset_monitoring_after,
 		   	    		  suspend_after);
+
+		printHeaderMessage("Monitoring the machine", false);
+
+		manager.watchSystem();
 	}
 	else
 	{
-		cout << "No path file provided, using default settings." << endl;
+		cout << "Failed to parse the cfg file, quitting." << endl;
 	}
 
-	printHeaderMessage("Monitoring the machine", false);
-
-	manager.watchSystem();
-
-	return 0;
+	return(EXIT_SUCCESS);
 }

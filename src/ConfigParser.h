@@ -28,7 +28,7 @@
 #include "utils.h"
 #include "constants.h"
 
-using namespace config4cpp;
+//using namespace config4cpp;
 using namespace std;
 using namespace libconfig;
 
@@ -48,35 +48,24 @@ public:
 					 int *reset_monitoring_after,
 					 int *suspend_after);
 
-	bool loockupFieldInCfgFile(Configuration *cfg,
-					           const char *scope,
-					           const char *fieldName,
-					           const char **output,
-					           const string &defaultValue);
+	template <typename T>
+	void loockupFieldInCfgFile(const Setting& fileRoot,
+					           const string &fieldName,
+					           T &output,
+					           const T &defaultValue);
 
-	bool loockupFieldInCfgFile(Configuration *cfg,
-					           const char *scope,
-					           const char *fieldName,
-					           int *output,
-					           int defaultValue);
+	bool readFile(libconfig::Config &cfg, const string &filePath);
 
-	bool loockupFieldInCfgFile(Configuration *cfg,
-					           const char *scope,
-					           const char *fieldName,
-					           bool *output,
-					           bool defaultValue);
+	void parseMultiChoiceArgs(const string &input,
+							  vector<string> *output,
+							  bool (*validator)(const string &));
 
-	void parseMultiCoiceArgs(const char *input,
-							 vector<string> *output,
-							 bool (*validator)(const string &));
+	void parseMultiChoiceSupportingAll(const string &input,
+									   vector<string> *output,
+									   vector<string> allAvailableOptions,
+									   bool (*validator)(const string &));
 
-	void parseMultiCoiceSupportingAll(const char *input,
-									  vector<string> *output,
-									  vector<string> allAvailableOptions,
-									  bool (*validator)(const string &));
-
-	string charTostring(const char *input);
-	void parseSleepMode(const char *inputSleepMode, SLEEP_MODE *sleepMode);
+	void parseSleepMode(const string &inputSleepMode, SLEEP_MODE *sleepMode);
 };
 
 #endif

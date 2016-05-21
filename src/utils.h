@@ -39,6 +39,7 @@ bool runSystemCommand(const string &command, vector<string> *output = 0);
 double getDoubleFromSystemCall(const string &command);
 double roundValue(double value);
 string trimString(string input);
+string charTostring(const char *input);
 void splitStringByDelimiter(vector<string> *output,
 		                    const string &input,
 		                    const string &delimiter);

@@ -155,10 +155,10 @@ bool Manager::isSystemIdle()
 
 	bool isIdle = m_suspendIfCpuIdle || m_suspendIfStorageIdle;
 
-	cout << "Average CPU usage: load - "      << cpuLoad     << "%." << "\n";
+	cout << "Average CPU usage: Load - "      << cpuLoad     << "%." << "\n";
 
-	cout << "Average Storage usage (across all monitored drives): load - "
-	     << storageLoad << "%, totalRead - " << storageRead << "KB/s, totalWritten - "
+	cout << "Average Storage usage (across all monitored drives): Load - "
+	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
 	     << storageWritten << "KB/s.\n";
 
 	if(cpuLoad > CPU_LIMIT)
