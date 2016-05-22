@@ -22,10 +22,7 @@
 using namespace std;
 
 const double TOTAL_MINUTS_IN_DAY = 1440;
-const double SUSPEND_AFTER       = 15;     //suspend if system idle # times
-const double CHECK_IF_IDLE_EVERY = 1;     //check if system is idle every # minutes
-const double STOP_MONITORING_FOR = 5;    //stop monitoring system for # minutes
-const double RESET_MONITORING_IF_BUSY_FOR = 3; //reset monitoring counter if found busy # times
+
 const double NETWORK_LIMIT       = 500;    //500KB/s total network traffic
 const double CPU_LIMIT           = 10;     //10% cpu usage
 const double STORAGE_READ_WRITE_LIMIT    = 400;    //400KB/s across all drives
@@ -38,6 +35,15 @@ const string BEFOR_CPU_LINE_IDENTIFIER   = "avg-cpu";   //line before cpu usage 
 const string BEFORE_DISK_LINE_IDENTIFIER = "Device";    //line before disks usage in iostat output
 const string PING_IDENTIFIER = "from";    //string to look for in ping output if client is connected
 const string CONFIG_DELIMITER = ",";      //delimiter used in the config file
+
+//default settings
+const int SUSPEND_AFTER       = 15;         //suspend system if idle for more than (x minute)
+const int CHECK_IF_IDLE_EVERY = 1;          //check if system is idle every (x minute)
+const int STOP_MONITORING_FOR = 5;          //stop monitoring system for (x minute)
+const int RESET_MONITORING_IF_BUSY_FOR = 3; //reset monitoring counter if found busy (x minute)
+const bool SUSPEND_IF_CPU_IDLE     = true;  //suspend the machine if the cpu is idle
+const bool SUSPEND_IF_STORAGE_IDLE = true;   //suspend the machine if the disks are idle
+
 
 enum SLEEP_MODE {STAND_BY, MEM, DISK};
 

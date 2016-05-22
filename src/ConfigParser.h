@@ -38,7 +38,6 @@ public:
 	bool loadConfigs(const string &filePath,
 			         vector<string> *ipToWatch,
                      vector<string> *disksToMonitor,
-                     vector<string> *disksToSpinDown,
 			         vector<string> *wakeAt,
 			         SLEEP_MODE *sleepMode,
 			         bool *suspend_if_cpu_idle,
@@ -49,10 +48,10 @@ public:
 					 int *suspend_after);
 
 	template <typename T>
-	void loockupFieldInCfgFile(const Setting& fileRoot,
+	void loockupFieldInCfgFile(const Setting& scope,
 					           const string &fieldName,
 					           T &output,
-					           const T &defaultValue);
+					           const T *defaultValue = NULL);
 
 	bool readFile(libconfig::Config &cfg, const string &filePath);
 

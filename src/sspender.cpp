@@ -30,7 +30,7 @@ int main(int argc, char *argv[])
 		filePath = argv[1];
 	}
 
-	vector<string> ipToWatch, disksToMonitor, disksToSpinDown, wakeAt;
+	vector<string> ipToWatch, disksToMonitor, wakeAt;
 	SLEEP_MODE sleepMode;
 	int check_if_idle_every;
     int stop_monitoring_for;
@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
 	bool configParsed = configParser.loadConfigs(filePath,
 			                                     &ipToWatch,
 			                                     &disksToMonitor,
-			                                     &disksToSpinDown,
 			                                     &wakeAt,
 			                                     &sleepMode,
 			                                     &suspend_if_cpu_idle,
@@ -72,12 +71,6 @@ int main(int argc, char *argv[])
 		for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
 		{
 			cout << disksToMonitor[i] << ",";
-		}
-
-		cout << "\nSpin down these drives if idle: ";
-		for(size_t i = 0, size = disksToSpinDown.size(); i < size; ++i)
-		{
-			cout << disksToSpinDown[i] << ",";
 		}
 
 		cout << "\nWake up the machine at the following times: ";

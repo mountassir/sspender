@@ -124,7 +124,6 @@ namespace
 bool ConfigParser::loadConfigs(const string &filePath,
                          vector<string> *ipToWatch,
                          vector<string> *disksToMonitor,
-                         vector<string> *disksToSpinDown,
                          vector<string> *wakeAt,
                          SLEEP_MODE *sleepMode,
                          bool *suspend_if_cpu_idle,
@@ -143,31 +142,54 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		return false;
 	}
 
-	const Setting& root = cfg.getRoot();
-
-	const char *configFile = filePath.c_str();
-
-	string ips_to_watch;
-	string disks_to_monitor;
-	string disks_to_spin_down;
-	string wake_at;
-	string sleep_mode;
-
-	printHeaderMessage("Reading config file = " + filePath, false);
+	string ips_to_watch = "";
+	string disks_to_monitor = "";
+	string wake_at = "";
+	string sleep_mode = "";
 
 	try
 	{
-		loockupFieldInCfgFile(root, string("ips_to_watch"),            ips_to_watch,             string(""));
-		loockupFieldInCfgFile(root, string("disks_to_monitor"),        disks_to_monitor,         string("all"));
-		loockupFieldInCfgFile(root, string("disks_to_spin_down"),      disks_to_spin_down,       string(""));
-		loockupFieldInCfgFile(root, string("wake_at"),                 wake_at,                  string(""));
-		loockupFieldInCfgFile(root, string("sleep_mode"),              sleep_mode,               string("disk"));
-		loockupFieldInCfgFile(root, string("check_if_idle_every"),     *check_if_idle_every,     1);
-		loockupFieldInCfgFile(root, string("stop_monitoring_for"),     *stop_monitoring_for,     5);
-		loockupFieldInCfgFile(root, string("reset_monitoring_after"),  *reset_monitoring_after,  3);
-		loockupFieldInCfgFile(root, string("suspend_after"),           *suspend_after,           5);
-		loockupFieldInCfgFile(root, string("suspend_if_cpu_idle"),     *suspend_if_cpu_idle,     true);
-		loockupFieldInCfgFile(root, string("suspend_if_storage_idle"), *suspend_if_storage_idle, true);
+		const Setting& fileRoot = cfg.getRoot();
+
+		const Setting& tuningScope = fileRoot["tuning"];
+
+		const Setting& settingScope = fileRoot["setting"];
+
+		printHeaderMessage("Reading config file = " + filePath, false);
+
+		//root.tuning
+		loockupFieldInCfgFile(tuningScope, string("check_if_idle_every"),    *check_if_idle_every,    &CHECK_IF_IDLE_EVERY);
+		loockupFieldInCfgFile(tuningScope, string("stop_monitoring_for"),    *stop_monitoring_for,    &STOP_MONITORING_FOR);
+		loockupFieldInCfgFile(tuningScope, string("suspend_after"),          *suspend_after,          &SUSPEND_AFTER);
+		loockupFieldInCfgFile(tuningScope, string("reset_monitoring_after"), *reset_monitoring_after, &RESET_MONITORING_IF_BUSY_FOR);
+
+		//root.setting
+		loockupFieldInCfgFile(settingScope, string("suspend_if_cpu_idle"),     *suspend_if_cpu_idle,     &SUSPEND_IF_CPU_IDLE);
+		loockupFieldInCfgFile(settingScope, string("suspend_if_storage_idle"), *suspend_if_storage_idle, &SUSPEND_IF_STORAGE_IDLE);
+		loockupFieldInCfgFile(settingScope, string("ips_to_watch"), ips_to_watch);
+		loockupFieldInCfgFile(settingScope, string("wake_at"),      wake_at);
+		loockupFieldInCfgFile(settingScope, string("sleep_mode"),   sleep_mode);
+
+		//root.setting.devices
+		const Setting& disksToMonitor = settingScope["devices_to_monitor"]["disks"];
+
+		for(size_t i = 0, len = disksToMonitor.getLength(); i < len; ++i)
+		{
+			string diskName, diskUUID;
+			bool suspendIfIdle, spinDown;
+
+			disksToMonitor[i].lookupValue("name", diskName);
+			disksToMonitor[i].lookupValue("uuid", diskUUID);
+			disksToMonitor[i].lookupValue("no_suspend_if_not_idle", suspendIfIdle);
+			disksToMonitor[i].lookupValue("spind_down_if_idle", spinDown);
+
+			cout << "*********** " << diskName << endl;
+			cout << "*********** " << diskUUID << endl;
+			cout << "*********** " << suspendIfIdle << endl;
+			cout << "*********** " << spinDown << endl;
+		}
+
+		loockupFieldInCfgFile(fileRoot, string("disks_to_monitor"), disks_to_monitor);
 	}
 	catch(const ConfigException &configExep)
 	{
@@ -182,7 +204,6 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		 << "suspend_if_storage_idle = "          << (*suspend_if_storage_idle  ? "true" : "false") << "\n"
 		 << "ips_to_watch = "                     << ips_to_watch             << "\n"
 		 << "disks_to_monitor = "                 << disks_to_monitor         << "\n"
-		 << "disks_to_spin_down = "               << disks_to_spin_down       << "\n"
 		 << "wake_at = "                          << wake_at                  << "\n"
 		 << "sleep_mode = "                       << sleep_mode               << "\n"
 		 << "check_if_idle_every (minutes) = "    << *check_if_idle_every     << "\n"
@@ -195,7 +216,6 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	getAllDisksAndPartitions(&allDisks, &allPartitions);
 
 	parseMultiChoiceSupportingAll(disks_to_monitor, disksToMonitor, allDisks, isValidDisk);
-	parseMultiChoiceSupportingAll(disks_to_spin_down, disksToSpinDown, allDisks, isValidDisk);
 
 	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
 	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
@@ -228,16 +248,16 @@ bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
 }
 
 template <typename T>
-void ConfigParser::loockupFieldInCfgFile(const Setting& fileRoot,
+void ConfigParser::loockupFieldInCfgFile(const Setting& scope,
 									     const string &fieldName,
 									     T &output,
-									     const T &defaultValue)
+									     const T *defaultValue /* = null*/)
 {
-	if(fileRoot.exists(fieldName))
+	if(scope.exists(fieldName))
 	{
 		cout << "Found '" << fieldName << "'\n";
 
-		if(!fileRoot.lookupValue(fieldName, output))
+		if(!scope.lookupValue(fieldName, output))
 		{
 			cout << "Failed to lookup '" << fieldName << "'\n";
 
@@ -246,12 +266,12 @@ void ConfigParser::loockupFieldInCfgFile(const Setting& fileRoot,
 			throw(exp);
 		}
 	}
-	else
+	else if(defaultValue)
 	{
 		cout << "Could not find '" << fieldName
-			 << "', using default value '" << defaultValue << "'\n";
+			 << "', using default value '" << *defaultValue << "'\n";
 
-		output = defaultValue;
+		output = *defaultValue;
 	}
 }
 

@@ -37,7 +37,7 @@ void getCurremtTimeInMinutes(double *totalMinutes);
 bool uuidToDiskName(const string &uuid, string *diskName);
 void printHeaderMessage(const string &message, bool logTime);
 void splitByEmptySpace(const string &input, vector<string> *output);
-bool runSystemCommand(const string &command, vector<string> *output = 0);
+bool runSystemCommand(const string &command, vector<string> *output = NULL);
 double getDoubleFromSystemCall(const string &command);
 double roundValue(double value);
 string trimString(string input);
