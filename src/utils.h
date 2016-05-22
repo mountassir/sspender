@@ -27,12 +27,14 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <ctime>
 
 using namespace std;
 
 void getAllDisksAndPartitions(vector<string> *disks, vector<string> *partitions);
 bool convertTimeToMinutes(string time, double *totalMinutes);
-bool getCurremtTimeInMinutes(double *totalMinutes);
+void getCurremtTimeInMinutes(double *totalMinutes);
+bool uuidToDiskName(const string &uuid, string *diskName);
 void printHeaderMessage(const string &message, bool logTime);
 void splitByEmptySpace(const string &input, vector<string> *output);
 bool runSystemCommand(const string &command, vector<string> *output = 0);

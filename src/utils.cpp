@@ -49,6 +49,35 @@ void getAllDisksAndPartitions(vector<string> *disks, vector<string> *partitions)
 	}
 }
 
+bool uuidToDiskName(const string &uuid, string *diskName)
+{
+	string command = "ls -l /dev/disk/by-uuid/" + uuid + " | awk '{print $NF}'";
+
+	vector<string> output;
+
+	bool commandExecuted = runSystemCommand(command, &output);
+
+	if(commandExecuted && output.size() > 0)
+	{
+		string firstLine = output[0];
+
+		vector<string> splitLine;
+
+		splitStringByDelimiter(&splitLine, firstLine, "/");
+
+		if(splitLine.size() == 3)
+		{
+			*diskName = splitLine[splitLine.size() -1 ];
+		}
+		else
+		{
+			cout << firstLine << endl;
+		}
+	}
+
+	return false;
+}
+
 bool convertTimeToMinutes(string time, double *totalMinutes)
 {
 	replace(time.begin(), time.end(), ':', ' ');
@@ -62,21 +91,18 @@ bool convertTimeToMinutes(string time, double *totalMinutes)
 		return false;
 	}
 
-	*totalMinutes += atoi(splitTime[0].c_str()) * 60;
-	*totalMinutes += atoi(splitTime[1].c_str());
+	*totalMinutes = (atoi(splitTime[0].c_str()) * 60) + atoi(splitTime[1].c_str());
 
 	return true;
 }
 
-bool getCurremtTimeInMinutes(double *totalMinutes)
+void getCurremtTimeInMinutes(double *totalMinutes)
 {
-	vector<string> dateOutput;
-	//todo no need to run command, get the time here
-	runSystemCommand("date +%R", &dateOutput);
+    time_t currentTime = time(0);
 
-	bool gotTimeInMinutes = convertTimeToMinutes(dateOutput[0], totalMinutes);
+    struct tm *now = localtime(&currentTime);
 
-	return gotTimeInMinutes;
+    *totalMinutes = (now->tm_hour * 60) + now->tm_min;
 }
 
 void printHeaderMessage(const string &message, bool logTime)

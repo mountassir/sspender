@@ -197,10 +197,7 @@ void Manager::suspendServer()
 {
 	double currentTimeInMinutes = 0;  //since 00:00:00
 
-	if(!getCurremtTimeInMinutes(&currentTimeInMinutes))
-	{
-		return;
-	}
+	getCurremtTimeInMinutes(&currentTimeInMinutes);
 
 	vector<double> suspendUpTo;
 
