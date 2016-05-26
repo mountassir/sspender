@@ -18,12 +18,13 @@
 
 #include "Device.h"
 
-Device::Device(const string &deviceName)
+Device::Device(const string &deviceName, bool suspendIfIdle)
 {
 	m_deviceName = deviceName;
 	m_currentUsage.load = 0;
 	m_watchDog.reset(new WatchDog(true));
 	m_initialized = false;
+	m_shouldSuspendIfIdle = suspendIfIdle;
 
 	resetUsage();
 }

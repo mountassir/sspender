@@ -32,7 +32,7 @@ void Manager::setIpsToWatch(const vector<string> &ipToWatch)
 	}
 }
 
-void Manager::setDisksToMonitor(const vector<string> &disksToMonitor)
+void Manager::setDisksToMonitor(const vector<DiskCfg> &disksToMonitor)
 {
 	for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
 	{

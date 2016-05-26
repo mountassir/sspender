@@ -42,7 +42,8 @@ const int CHECK_IF_IDLE_EVERY = 1;          //check if system is idle every (x m
 const int STOP_MONITORING_FOR = 5;          //stop monitoring system for (x minute)
 const int RESET_MONITORING_IF_BUSY_FOR = 3; //reset monitoring counter if found busy (x minute)
 const bool SUSPEND_IF_CPU_IDLE     = true;  //suspend the machine if the cpu is idle
-const bool SUSPEND_IF_STORAGE_IDLE = true;   //suspend the machine if the disks are idle
+const bool SUSPEND_IF_STORAGE_IDLE = false; //suspend the machine if the disks are idle
+const bool SPIN_DOWN_DISK_IF_IDLE = false;   //spin down the disks when idle
 
 
 enum SLEEP_MODE {STAND_BY, MEM, DISK};

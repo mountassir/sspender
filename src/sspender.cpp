@@ -30,7 +30,8 @@ int main(int argc, char *argv[])
 		filePath = argv[1];
 	}
 
-	vector<string> ipToWatch, disksToMonitor, wakeAt;
+	vector<string> ipToWatch, wakeAt;
+	vector<DiskCfg> disksToMonitor;
 	SLEEP_MODE sleepMode;
 	int check_if_idle_every;
     int stop_monitoring_for;
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 		cout << "\nSuspend the machine if these drives are idle: ";
 		for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
 		{
-			cout << disksToMonitor[i] << ",";
+			cout << disksToMonitor[i].diskName << ",";
 		}
 
 		cout << "\nWake up the machine at the following times: ";

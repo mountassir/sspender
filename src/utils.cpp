@@ -34,16 +34,18 @@ void getAllDisksAndPartitions(vector<string> *disks, vector<string> *partitions)
 
 		if(splitLine.size() == 4)
 		{
+			int deviceMajor = atoi(splitLine[0].c_str());
 			int deviceMinor = atoi(splitLine[1].c_str());
+			string deviceName = splitLine[3];
 
 			if(deviceMinor == 0)
 			{
-				disks->push_back(splitLine[3]);
+				disks->push_back(deviceName);
 			}
 			else
 			if(deviceMinor > 0)
 			{
-				partitions->push_back(splitLine[3]);
+				partitions->push_back(deviceName);
 			}
 		}
 	}
@@ -130,14 +132,14 @@ string trimString(string input)
 {
 	string::const_iterator bItr = input.begin();
 
-	while(bItr != input.end() && isspace(*bItr))
+	while(bItr != input.end() && (isspace(*bItr) || iscntrl(*bItr) || isblank(*bItr)))
 	{
 		++bItr;
 	}
 
 	string::const_reverse_iterator eItr = input.rbegin();
 
-	while(eItr.base() != bItr && isspace(*eItr))
+	while(eItr.base() != bItr && (isspace(*eItr) || iscntrl(*eItr) || isblank(*eItr)))
 	{
 		eItr++;
 	}
@@ -161,6 +163,8 @@ bool runSystemCommand(const string &command, vector<string> *output /* = null*/)
 	{
 		while(fgets(buff, sizeof(buff), in) != NULL)
 		{
+			buff[strcspn(buff, "\n")] = 0;
+
 			output->push_back(buff);
 		}
 	}

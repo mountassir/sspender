@@ -37,7 +37,7 @@ class ConfigParser
 public:
 	bool loadConfigs(const string &filePath,
 			         vector<string> *ipToWatch,
-                     vector<string> *disksToMonitor,
+                     vector<DiskCfg> *disksToMonitor,
 			         vector<string> *wakeAt,
 			         SLEEP_MODE *sleepMode,
 			         bool *suspend_if_cpu_idle,
@@ -48,7 +48,7 @@ public:
 					 int *suspend_after);
 
 	template <typename T>
-	void loockupFieldInCfgFile(const Setting& scope,
+	bool loockupFieldInCfgFile(const Setting& scope,
 					           const string &fieldName,
 					           T &output,
 					           const T *defaultValue = NULL);
@@ -63,6 +63,10 @@ public:
 									   vector<string> *output,
 									   vector<string> allAvailableOptions,
 									   bool (*validator)(const string &));
+
+	void parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs);
+
+	void getAllDisksToMonitor(vector<DiskCfg> *diskConfigs);
 
 	void parseSleepMode(const string &inputSleepMode, SLEEP_MODE *sleepMode);
 };

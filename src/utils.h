@@ -27,9 +27,45 @@
 #include <algorithm>
 #include <fstream>
 #include <iostream>
+#include <cstring>
 #include <ctime>
 
 using namespace std;
+
+struct DiskCfg
+{
+	string diskName;
+	string diskUUID;
+	bool suspendIfIdle;
+	bool spinDown;
+
+//	ostream& operator << (ostream &os, const DiskCfg &cfg)
+//	{
+//
+//	}
+};
+
+struct DeviceUsage
+{
+	double load;
+	double totalRead;
+	double totalWritten;
+};
+
+struct DiskStats
+{
+	int num_r_io_processed;  //number of read I/Os processed
+	int num_r_io_merged;     //number of read I/Os merged
+	int num_r_sectors;       //number of sectors read
+	int time_r_ticks;        //total wait time for read requests
+	int num_w_io_processed;  //number of write I/Os processed
+	int num_w_io_merged;     //number of write I/Os merged
+	int num_w_sectors;       //number of sectors written
+	int time_w_ticks;        //total wait time for write requests
+	int num_in_flight;       //number of I/Os currently in flight
+	int time_io_ticks;       //total time this block device has been active
+	int time_in_queue;       //total wait for all requests
+};
 
 void getAllDisksAndPartitions(vector<string> *disks, vector<string> *partitions);
 bool convertTimeToMinutes(string time, double *totalMinutes);

@@ -29,8 +29,8 @@ class Cpu : public Device {
 private:
 
 public:
-	Cpu(const string &diskName) :
-		Device(diskName) { };
+	Cpu(const string &cpuName) :
+		Device(cpuName, true) { };
 
 	virtual void initDevice();
 	virtual void monitorUsage();

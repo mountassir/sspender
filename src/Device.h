@@ -34,13 +34,6 @@
 
 using namespace std;
 
-struct DeviceUsage
-{
-	double load;
-	double totalRead;
-	double totalWritten;
-};
-
 class Device {
 private:
 	mutex m_mutex;
@@ -48,15 +41,17 @@ private:
 	string m_deviceName;
 	DeviceUsage m_currentUsage, m_avrgUsage;
 	bool m_initialized;
+	bool m_shouldSuspendIfIdle;
 
 public:
-	Device(const string &deviceName);
+	Device(const string &deviceName, bool suspendIfIdle);
 	virtual ~Device();
 
 	void getCurrentUsage(DeviceUsage *deviceUsage);
 	void getAvrgUsage(DeviceUsage *deviceUsage);
 	void resetUsage();
 	void setUsage(const DeviceUsage &deviceUsage);
+	bool shouldSuspendIfIdle() { return m_shouldSuspendIfIdle; };
 
 	//defined by derived classes
 	virtual void initDevice() = 0;

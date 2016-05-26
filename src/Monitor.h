@@ -43,8 +43,8 @@ public:
 	void getStorageLoad(double *storageLoad, double *storageRead, double *storageWritten);
 	bool areClientsConnected(const vector<string> &clients);
 	bool isIpAddressOnline(const string &ipAddress);
-	void monitorSystemUsage(const vector<string> &disks,
-                            const vector<string> &nics);
+	void monitorSystemUsage(const vector<DiskCfg> &disks,
+                            const vector<string> &cpus);
 };
 
 #endif

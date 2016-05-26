@@ -26,22 +26,28 @@ namespace
 			                     DeviceUsage *averageUsage)
 	{
 		size_t numberOfDevices = devices.size();
+		int numberOfMonitoredDevices = 0;
 
 		for(size_t i = 0; i < numberOfDevices; ++i)
 		{
-			DeviceUsage deviceUsage = {0, 0, 0};
+			if(devices[i]->shouldSuspendIfIdle())
+			{
+				DeviceUsage deviceUsage = {0, 0, 0};
 
-			devices[i]->getAvrgUsage(&deviceUsage);
-			devices[i]->resetUsage();
+				devices[i]->getAvrgUsage(&deviceUsage);
+				devices[i]->resetUsage();
 
-			totalUsage->load         += deviceUsage.load;
-			totalUsage->totalRead    += deviceUsage.totalRead;
-			totalUsage->totalWritten += deviceUsage.totalWritten;
+				totalUsage->load         += deviceUsage.load;
+				totalUsage->totalRead    += deviceUsage.totalRead;
+				totalUsage->totalWritten += deviceUsage.totalWritten;
+
+				numberOfMonitoredDevices++;
+			}
 		}
 
-		averageUsage->load         += totalUsage->load / numberOfDevices;
-		averageUsage->totalRead    += totalUsage->totalRead / numberOfDevices;
-		averageUsage->totalWritten += totalUsage->totalWritten / numberOfDevices;
+		averageUsage->load         += totalUsage->load / numberOfMonitoredDevices;
+		averageUsage->totalRead    += totalUsage->totalRead / numberOfMonitoredDevices;
+		averageUsage->totalWritten += totalUsage->totalWritten / numberOfMonitoredDevices;
 	}
 }
 
@@ -63,12 +69,15 @@ Monitor::~Monitor()
 	}
 }
 
-void Monitor::monitorSystemUsage(const vector<string> &disks,
+void Monitor::monitorSystemUsage(const vector<DiskCfg> &disks,
 		                         const vector<string> &cpus)
 {
 	for(size_t i = 0, len = disks.size(); i < len; ++i)
 	{
-		Disk *newDisk= new Disk(disks[i]);
+		Disk *newDisk= new Disk(disks[i].diskName,
+								disks[i].diskUUID,
+								disks[i].spinDown,
+								disks[i].suspendIfIdle);
 
 		newDisk->monitorUsage();
 

@@ -42,7 +42,7 @@ class Manager
 private:
 	Monitor m_monitor;
 	vector<string> m_ipsToWatch;
-	vector<string> m_disksToMonitor;
+	vector<DiskCfg> m_disksToMonitor;
 	vector<string> m_cpusToMonitor;
 	vector<string> m_timesToWakeAt;
 	SLEEP_MODE m_sleepMode;
@@ -60,7 +60,7 @@ public:
 	void watchSystem();
 	void setWhatToMonitor(bool suspendIfCpuIdle, bool suspendIfStorageIdle);
 	void setIpsToWatch(const vector<string> &ipToWatch);
-	void setDisksToMonitor(const vector<string> &disksToMonitor);
+	void setDisksToMonitor(const vector<DiskCfg> &disksToMonitor);
 	void setCpusToMonitor();
 	void setTimesToWakeAt(const vector<string> &wakeAt);
 	void setSleepMode(SLEEP_MODE sleepMode);

@@ -123,7 +123,7 @@ namespace
 
 bool ConfigParser::loadConfigs(const string &filePath,
                          vector<string> *ipToWatch,
-                         vector<string> *disksToMonitor,
+                         vector<DiskCfg> *diskConfigs,
                          vector<string> *wakeAt,
                          SLEEP_MODE *sleepMode,
                          bool *suspend_if_cpu_idle,
@@ -151,9 +151,10 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	{
 		const Setting& fileRoot = cfg.getRoot();
 
-		const Setting& tuningScope = fileRoot["tuning"];
-
+		const Setting& tuningScope  = fileRoot["tuning"];
 		const Setting& settingScope = fileRoot["setting"];
+		const Setting& deviceScope  = settingScope["devices_to_monitor"];
+		const Setting& diskScope    = deviceScope["disks"];
 
 		printHeaderMessage("Reading config file = " + filePath, false);
 
@@ -171,25 +172,18 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		loockupFieldInCfgFile(settingScope, string("sleep_mode"),   sleep_mode);
 
 		//root.setting.devices
-		const Setting& disksToMonitor = settingScope["devices_to_monitor"]["disks"];
+		bool monitorAllDisks = false;
+		loockupFieldInCfgFile(deviceScope, string("all_disks"),   monitorAllDisks);
 
-		for(size_t i = 0, len = disksToMonitor.getLength(); i < len; ++i)
+		if(monitorAllDisks)
 		{
-			string diskName, diskUUID;
-			bool suspendIfIdle, spinDown;
-
-			disksToMonitor[i].lookupValue("name", diskName);
-			disksToMonitor[i].lookupValue("uuid", diskUUID);
-			disksToMonitor[i].lookupValue("no_suspend_if_not_idle", suspendIfIdle);
-			disksToMonitor[i].lookupValue("spind_down_if_idle", spinDown);
-
-			cout << "*********** " << diskName << endl;
-			cout << "*********** " << diskUUID << endl;
-			cout << "*********** " << suspendIfIdle << endl;
-			cout << "*********** " << spinDown << endl;
+			getAllDisksToMonitor(diskConfigs);
 		}
-
-		loockupFieldInCfgFile(fileRoot, string("disks_to_monitor"), disks_to_monitor);
+		else
+		{
+			//root.setting.devices.disks
+			parseDisks(diskScope, diskConfigs);
+		}
 	}
 	catch(const ConfigException &configExep)
 	{
@@ -211,17 +205,61 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		 << "reset_monitoring_after (minutes) = " << *reset_monitoring_after  << "\n"
 		 << "suspend_after (minutes) = "          << *suspend_after           << "\n";
 
-	vector<string> allDisks, allPartitions;
-
-	getAllDisksAndPartitions(&allDisks, &allPartitions);
-
-	parseMultiChoiceSupportingAll(disks_to_monitor, disksToMonitor, allDisks, isValidDisk);
-
 	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
 	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
 	parseSleepMode(sleep_mode, sleepMode);
 
 	return true;
+}
+
+void ConfigParser::parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs)
+{
+	for(size_t i = 0, len = diskScope.getLength(); i < len; ++i)
+	{
+		DiskCfg disk;
+
+		loockupFieldInCfgFile(diskScope[i], string("no_suspend_if_not_idle"), disk.suspendIfIdle, &SUSPEND_IF_STORAGE_IDLE);
+		loockupFieldInCfgFile(diskScope[i], string("spind_down_if_idle"), disk.spinDown, &SPIN_DOWN_DISK_IF_IDLE);
+
+		string diskUuid, diskName;
+		bool gotValidUuid = false;
+
+		if(loockupFieldInCfgFile(diskScope[i], string("uuid"), diskUuid))
+		{
+			gotValidUuid = uuidToDiskName(diskUuid, &diskName);
+		}
+
+		if(!gotValidUuid)
+		{
+			loockupFieldInCfgFile(diskScope[i], string("name"), diskName);
+		}
+
+		disk.diskUUID = diskUuid;
+		disk.diskName = diskName;
+
+		if(isValidDisk(disk.diskName) && (disk.suspendIfIdle || disk.spinDown))
+		{
+			diskConfigs->push_back(disk);
+		}
+	}
+}
+
+void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> *diskConfigs)
+{
+	cout << "Getting all the disks attached to the machine: ";
+	vector<string> disks, partitions;
+
+	getAllDisksAndPartitions(&disks, &partitions);
+
+	for(size_t i = 0, size = disks.size(); i < size; ++i)
+	{
+		cout << disks[i] << ", ";
+		DiskCfg diskCfg= {disks[i], "", true, false};
+
+		diskConfigs->push_back(diskCfg);
+	}
+
+	cout << "\n";
 }
 
 bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
@@ -248,7 +286,7 @@ bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
 }
 
 template <typename T>
-void ConfigParser::loockupFieldInCfgFile(const Setting& scope,
+bool ConfigParser::loockupFieldInCfgFile(const Setting& scope,
 									     const string &fieldName,
 									     T &output,
 									     const T *defaultValue /* = null*/)
@@ -265,6 +303,8 @@ void ConfigParser::loockupFieldInCfgFile(const Setting& scope,
 
 			throw(exp);
 		}
+
+		return true;
 	}
 	else if(defaultValue)
 	{
@@ -272,7 +312,11 @@ void ConfigParser::loockupFieldInCfgFile(const Setting& scope,
 			 << "', using default value '" << *defaultValue << "'\n";
 
 		output = *defaultValue;
+
+		return true;
 	}
+
+	return false;
 }
 
 void ConfigParser::parseMultiChoiceSupportingAll(const string &input,
