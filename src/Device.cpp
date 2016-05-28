@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Mountassir El Hafi, (mountassirbillah1@gmail.com)
  *
- * Writer.cpp: Part of sspender
+ * Device.cpp: Part of sspender
  *
  * sspender is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as

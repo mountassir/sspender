@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Mountassir El Hafi, (mountassirbillah1@gmail.com)
  *
- * Writer.cpp: Part of sspender
+ * ConfigParser.cpp: Part of sspender
  *
  * sspender is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -93,35 +93,32 @@ namespace
 		return timeIsValid;
 	}
 
-	bool isValidDisk(const string &disk)
+	bool isValidDisk(DiskCfg &disk, PartitionTable &partitionTable)
 	{
-		vector<string> disks, partitions;
-
-		getAllDisksAndPartitions(&disks, &partitions);
-
-		for(size_t i = 0, size = partitions.size(); i < size; ++i)
+		if(disk.suspendIfIdle || disk.spinDown)
 		{
-			if(partitions[i] == disk)
-			{
-				return true;
-			}
-		}
+			string parentDisk;
 
-		for(size_t i = 0, size = disks.size(); i < size; ++i)
+			if(partitionTable.isPartitionValid(disk.diskName, &parentDisk))
+			{
+				cout << "'" << disk.diskName << "' is a partition, will monitor the parent disk '" << parentDisk << "'.\n";
+
+				disk.diskName = parentDisk;
+			}
+
+			return partitionTable.isDiskValid(disk.diskName);
+		}
+		else
 		{
-			if(disks[i] == disk)
-			{
-				return true;
-			}
+			cout << "Both no_suspend_if_not_idle and spind_down_if_idle are set to false for " << disk.diskName << ", skipping.\n";
 		}
-
-		cout << "Invalid disk/partition " << "'" << disk << "'" << endl;
 
 		return false;
 	}
 }
 
 bool ConfigParser::loadConfigs(const string &filePath,
+		                 const PartitionTable &partitionTable,
                          vector<string> *ipToWatch,
                          vector<DiskCfg> *diskConfigs,
                          vector<string> *wakeAt,
@@ -237,9 +234,34 @@ void ConfigParser::parseDisks(const Setting& diskScope, vector<DiskCfg> *diskCon
 		disk.diskUUID = diskUuid;
 		disk.diskName = diskName;
 
-		if(isValidDisk(disk.diskName) && (disk.suspendIfIdle || disk.spinDown))
+		if(isValidDisk(disk, m_partitionTable))
 		{
-			diskConfigs->push_back(disk);
+			vector<DiskCfg>::const_iterator iter = diskConfigs->begin();
+
+			bool diskAlreadyAdded = false;
+
+			while(iter != diskConfigs->end())
+			{
+				if(iter->diskName == disk.diskName)
+				{
+					cout << "'" << disk.diskName << "' already being monitored, skipping.\n";
+
+					diskAlreadyAdded = true;
+
+					break;
+				}
+
+				iter++;
+			}
+
+			if(!diskAlreadyAdded)
+			{
+				diskConfigs->push_back(disk);
+			}
+		}
+		else
+		{
+			cout << "'" << disk.diskName << "' is not valid, skipping.\n";
 		}
 	}
 }
@@ -249,7 +271,8 @@ void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> *diskConfigs)
 	cout << "Getting all the disks attached to the machine: ";
 	vector<string> disks, partitions;
 
-	getAllDisksAndPartitions(&disks, &partitions);
+	m_partitionTable.getAllDisks(&disks);
+	m_partitionTable.getAllPartitions(&partitions);
 
 	for(size_t i = 0, size = disks.size(); i < size; ++i)
 	{

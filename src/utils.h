@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Mountassir El Hafi, (mountassirbillah1@gmail.com)
  *
- * Writer.cpp: Part of sspender
+ * utils.h: Part of sspender
  *
  * sspender is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -67,7 +67,6 @@ struct DiskStats
 	int time_in_queue;       //total wait for all requests
 };
 
-void getAllDisksAndPartitions(vector<string> *disks, vector<string> *partitions);
 bool convertTimeToMinutes(string time, double *totalMinutes);
 void getCurremtTimeInMinutes(double *totalMinutes);
 bool uuidToDiskName(const string &uuid, string *diskName);

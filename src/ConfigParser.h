@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Mountassir El Hafi, (mountassirbillah1@gmail.com)
  *
- * Writer.cpp: Part of sspender
+ * ConfigParser.h: Part of sspender
  *
  * sspender is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -27,6 +27,7 @@
 
 #include "utils.h"
 #include "constants.h"
+#include "PartitionTable.h"
 
 //using namespace config4cpp;
 using namespace std;
@@ -34,8 +35,14 @@ using namespace libconfig;
 
 class ConfigParser
 {
+private:
+	PartitionTable & m_partitionTable;
+
 public:
+	ConfigParser(PartitionTable & partitionTable) : m_partitionTable(partitionTable){} ;
+
 	bool loadConfigs(const string &filePath,
+			         const PartitionTable &partitionTable,
 			         vector<string> *ipToWatch,
                      vector<DiskCfg> *disksToMonitor,
 			         vector<string> *wakeAt,

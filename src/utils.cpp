@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Mountassir El Hafi, (mountassirbillah1@gmail.com)
  *
- * Writer.cpp: Part of sspender
+ * utils.cpp: Part of sspender
  *
  * sspender is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -18,38 +18,6 @@
 
 #include "utils.h"
 
-void getAllDisksAndPartitions(vector<string> *disks, vector<string> *partitions)
-{
-	vector<string> fileContent;
-	string fileName = "/proc/partitions";
-
-	parseFile(fileName, &fileContent);
-
-	for(size_t i = 1, size = fileContent.size(); i < size; ++i)
-	{
-		string line = fileContent[i];
-		vector<string> splitLine;
-
-		splitByEmptySpace(line, &splitLine);
-
-		if(splitLine.size() == 4)
-		{
-			int deviceMajor = atoi(splitLine[0].c_str());
-			int deviceMinor = atoi(splitLine[1].c_str());
-			string deviceName = splitLine[3];
-
-			if(deviceMinor == 0)
-			{
-				disks->push_back(deviceName);
-			}
-			else
-			if(deviceMinor > 0)
-			{
-				partitions->push_back(deviceName);
-			}
-		}
-	}
-}
 
 bool uuidToDiskName(const string &uuid, string *diskName)
 {

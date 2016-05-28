@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2016 Mountassir El Hafi, (mountassirbillah1@gmail.com)
  *
- * Writer.cpp: Part of sspender
+ * sspender.cpp: Part of sspender
  *
  * sspender is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 3 as
@@ -17,6 +17,7 @@
  */
 
 #include "Manager.h"
+#include "PartitionTable.h"
 #include "ConfigParser.h"
 
 using namespace std;
@@ -40,10 +41,17 @@ int main(int argc, char *argv[])
     bool suspend_if_cpu_idle;
     bool suspend_if_storage_idle;
 
-	ConfigParser configParser;
+	PartitionTable partitionTable;
+
+	partitionTable.loadPartitionTable();
+
+	cout << "PartitionTable loaded:\n" << partitionTable << "\n";
+
+	ConfigParser configParser(partitionTable);
 	Manager manager;
 
 	bool configParsed = configParser.loadConfigs(filePath,
+												 partitionTable,
 			                                     &ipToWatch,
 			                                     &disksToMonitor,
 			                                     &wakeAt,
