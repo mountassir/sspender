@@ -31,9 +31,9 @@ using namespace std;
 
 namespace
 {
-	bool sortVector(int i,int j)
+	bool sortVector(int i, int j)
 	{
-		return (i<j);
+		return (i < j);
 	}
 }
 
