@@ -34,19 +34,28 @@ Device::~Device()
 	m_watchDog->shouldStillMonitor(false);
 }
 
+//this is a heart beat that will be called the detached thread,
+//when this object is out of scope, the detached thread will terminate
 bool Device::shouldStillMonitor()
 {
 	return m_watchDog->shouldStillMonitor();
 }
 
+//this is a kill switch for the detached thread that will be monitoring this device
 void Device::setMonitoringState(bool monitoringState)
 {
 	m_watchDog->shouldStillMonitor(monitoringState);
 }
 
+//get a pointer this device's watch dog, will be used by the detached thread
 shared_ptr<WatchDog> Device::getWatchDogCopy()
 {
 	return m_watchDog;
+}
+
+bool Device::shouldSuspendIfIdle()
+{
+	return m_shouldSuspendIfIdle;
 }
 
 string& Device::getDeviceName()
@@ -95,9 +104,7 @@ void Device::resetUsage(DeviceUsage *deviceUsage)
 {
 	std::lock_guard<mutex> locker(m_mutex);
 
-	deviceUsage->totalRead = 0;
-	deviceUsage->totalRead = 0;
-	deviceUsage->totalWritten = 0;
+	deviceUsage->reset();
 }
 
 void Device::setUsage(const DeviceUsage &deviceUsage)
@@ -111,8 +118,8 @@ void Device::setUsage(const DeviceUsage &deviceUsage)
 
 void Device::updateAverageUsage(const DeviceUsage &deviceUsage)
 {
-	m_avrgUsage.load = updateAverageValue(m_avrgUsage.load, deviceUsage.load);
-	m_avrgUsage.totalRead = updateAverageValue(m_avrgUsage.totalRead, deviceUsage.totalRead);
+	m_avrgUsage.load         = updateAverageValue(m_avrgUsage.load,         deviceUsage.load);
+	m_avrgUsage.totalRead    = updateAverageValue(m_avrgUsage.totalRead,    deviceUsage.totalRead);
 	m_avrgUsage.totalWritten = updateAverageValue(m_avrgUsage.totalWritten, deviceUsage.totalWritten);
 }
 
@@ -122,10 +129,14 @@ double Device::updateAverageValue(double currentAverageValue, double currentValu
 
 	if(currentAverageValue == 0)
 	{
+		//if the current average value is = 0 (got the first value),
+		//average is the new value.
 		newAverageValue = currentValue;
 	}
 	else
 	{
+		//if the current average value is != 0 (already have an average),
+		//average is (oldAverage + newValue) / 2
 		newAverageValue += (currentAverageValue + currentValue) / 2;
 	}
 

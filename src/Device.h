@@ -34,41 +34,80 @@
 
 using namespace std;
 
+/*
+ * This class represents a single device that will be monitored,
+ * stores, updates and exports all available statistics;
+ */
 class Device {
 private:
-	mutex m_mutex;
-	shared_ptr<WatchDog> m_watchDog;
-	string m_deviceName;
-	DeviceUsage m_currentUsage, m_avrgUsage;
-	bool m_initialized;
-	bool m_shouldSuspendIfIdle;
+	mutex m_mutex;                            //mutex to make reads/writes atomic
+	shared_ptr<WatchDog> m_watchDog;          //used to shutdown detached threads
+	string m_deviceName;                      //name of this device
+	DeviceUsage m_currentUsage, m_avrgUsage;  //current and average usage
+	bool m_initialized;                       //to check if the device is initialized
+	bool m_shouldSuspendIfIdle;               //if true, the machine will only suspend if this device
+	                                          //(and any other device where this is true) is idle
 
 public:
 	Device(const string &deviceName, bool suspendIfIdle);
 	virtual ~Device();
 
+	//getters
 	void getCurrentUsage(DeviceUsage *deviceUsage);
 	void getAvrgUsage(DeviceUsage *deviceUsage);
-	void resetUsage();
-	void setUsage(const DeviceUsage &deviceUsage);
-	bool shouldSuspendIfIdle() { return m_shouldSuspendIfIdle; };
 
-	//defined by derived classes
+	//setters
+	void setUsage(const DeviceUsage &deviceUsage);
+
+	//should the machine be suspended if this device is idle(and any other monitored devices)
+	bool shouldSuspendIfIdle();
+
+	//this will reset both current and average usage to 0
+	void resetUsage();
+
+	/* defined by derived classes */
+	//initialize this device
 	virtual void initDevice() = 0;
+
+	//start monitoring this device's usage
 	virtual void monitorUsage() = 0;
+
+	//returns the file containing the stats information
 	virtual string getStatesFileName() = 0;
+
+	//reads the stats from the file and calculate this device's usage
 	virtual void calculateUsage(ifstream &statesFile, DeviceUsage *deviceUsage) = 0;
 
 protected:
+	//returns this device's name
 	string& getDeviceName();
+
+	//check if the device is initialized
 	bool isDeviceInitialized();
+
+	//set initialization state
 	void isDeviceInitialized(bool initialized);
-	bool shouldStillMonitor();
-	void setMonitoringState(bool monitoringState);
+
+	//copy one usage struct to another (pointer)
 	void copyDeviceUsage(const DeviceUsage &input, DeviceUsage *output);
+
+	//reset a usage struct
 	void resetUsage(DeviceUsage *deviceUsage);
-	double updateAverageValue(double currentAverageValue, double currentValue);
+
+	//update the average usage
 	void updateAverageUsage(const DeviceUsage &deviceUsage);
+
+	//calculate the new average usage
+	double updateAverageValue(double currentAverageValue, double currentValue);
+
+	//this is a heart beat that will be called the detached thread,
+	//when this object is out of scope, the detached thread will terminate
+	bool shouldStillMonitor();
+
+	//this is a kill switch for the detached thread that will be monitoring this device
+	void setMonitoringState(bool monitoringState);
+
+	//get a pointer this device's watch dog, will be used by the detached thread
 	shared_ptr<WatchDog> getWatchDogCopy();
 };
 

@@ -50,6 +50,13 @@ struct DeviceUsage
 	double load;
 	double totalRead;
 	double totalWritten;
+
+	void reset ()
+	{
+		load = 0;
+		totalRead = 0;
+		totalWritten = 0;
+	}
 };
 
 struct DiskStats
