@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 
 		printHeaderMessage("Monitoring the machine", false);
 
-		manager.watchSystem();
+		manager.monitorSystemUsage();
 	}
 	else
 	{

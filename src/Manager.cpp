@@ -71,11 +71,12 @@ void Manager::setTimers(int check_if_idle_every,
 	m_suspendAfter         = suspend_after;
 }
 
-void Manager::watchSystem()
+void Manager::monitorSystemUsage()
 {
 	int idleTimer = 0;
 	int notIdleTimer = 0;
 
+	//start monitoring the usage of the passed in devices
 	m_monitor.monitorSystemUsage(m_disksToMonitor, m_cpusToMonitor);
 
 	while(true)
@@ -90,17 +91,20 @@ void Manager::watchSystem()
 				 << m_stopMonitoringFor
 				 << " mins." << endl;
 
+			//if any of the specified IPs is online, reset the counters and
+			//stop checking if the machine is idle, note that the usage of
+			//the devices will still be monitored by the detached threads
 			idleTimer = 0;
 			notIdleTimer = 0;
 
-			sleep(m_stopMonitoringFor * 60);
+			std::this_thread::sleep_for(std::chrono::minutes(m_stopMonitoringFor));
 
 			continue;
 		}
 
 		printHeaderMessage("Checking if system is idle", true);
 
-		bool isIdle = isSystemIdle();
+		bool isIdle = isTheMachineIdle();
 
 		if(isIdle)
 		{
@@ -114,20 +118,24 @@ void Manager::watchSystem()
 			cout << "System is not idle (" << notIdleTimer << ").\n";
 
 			++notIdleTimer;
-
-			//if system is busy for # minutes
-			if( (notIdleTimer * m_checkIfIdleEvery) > m_resetMonitoringAfter)
-			{
-				cout << "System was busy for more than " << m_resetMonitoringAfter
-					 << " mins, reseting idle timer.\n";
-
-				idleTimer = 0;
-				notIdleTimer = 0;
-			}
 		}
 
-		//if idle for # minuts
-		if( (idleTimer * m_checkIfIdleEvery) > m_suspendAfter)
+		int minutesTheMachineBeenBusyFor = notIdleTimer * m_checkIfIdleEvery;
+
+		//if system is busy for # minutes
+		if(minutesTheMachineBeenBusyFor > m_resetMonitoringAfter)
+		{
+			cout << "System was busy for more than " << m_resetMonitoringAfter
+				 << " mins, reseting idle timer.\n";
+
+			idleTimer = 0;
+			notIdleTimer = 0;
+		}
+
+		int minutesTheMachineBeenIdleFor = idleTimer * m_checkIfIdleEvery;
+
+		//if idle for # minutes
+		if(minutesTheMachineBeenIdleFor > m_suspendAfter)
 		{
 	        cout << "system was idle for more than "
 				 << m_suspendAfter
@@ -136,16 +144,17 @@ void Manager::watchSystem()
 			idleTimer = 0;
 			notIdleTimer = 0;
 
-			printHeaderMessage("Suspending system", true);
+			printHeaderMessage("Suspending the machine", true);
 
-			suspendServer();
+			suspendTheMachine();
 		}
 
-		sleep(m_checkIfIdleEvery * 60);
+		//check if the machine is idle every #minutes
+		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
 	}
 }
 
-bool Manager::isSystemIdle()
+bool Manager::isTheMachineIdle()
 {
 	double cpuLoad;
 	m_monitor.getCpuLoad(&cpuLoad);
@@ -193,7 +202,7 @@ bool Manager::isSystemIdle()
 	return isIdle;
 }
 
-void Manager::suspendServer()
+void Manager::suspendTheMachine()
 {
 	double currentTimeInMinutes = 0;  //since 00:00:00
 
@@ -270,7 +279,7 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 
 void Manager::rtcWakeSuspend(double secondsToSleep, vector<string> *output)
 {
-	string sleepMode = getSleepMode();
+	string sleepMode = getRtcWakeSleepMode();
 
 	ostringstream oss;
 	oss << "rtcwake -m " << sleepMode << " -s " << secondsToSleep;
@@ -299,7 +308,7 @@ void Manager::pmUtilSuspend(double secondsToSleep, vector<string> *output)
 	runSystemCommand(getPmUtilCommand(), output);
 }
 
-string Manager::getSleepMode()
+string Manager::getRtcWakeSleepMode()
 {
 	switch(m_sleepMode)
 	{

@@ -22,6 +22,7 @@
 #include <unistd.h>
 #include <algorithm>
 #include <iomanip>
+#include <chrono>
 
 #include "Monitor.h"
 #include "constants.h"
@@ -37,17 +38,26 @@ namespace
 	}
 }
 
+/*
+ * Manager class: sets up devices for monitoring,
+ * periodically checks if the machine is idle and
+ * suspends the machine.
+ */
 class Manager
 {
 private:
-	Monitor m_monitor;
-	vector<string> m_ipsToWatch;
-	vector<DiskCfg> m_disksToMonitor;
-	vector<string> m_cpusToMonitor;
-	vector<string> m_timesToWakeAt;
-	SLEEP_MODE m_sleepMode;
-	int m_checkIfIdleEvery, m_stopMonitoringFor, m_resetMonitoringAfter, m_suspendAfter;
-	bool m_suspendIfCpuIdle, m_suspendIfStorageIdle;
+	Monitor m_monitor;                 //machine usage monitor
+	vector<string> m_ipsToWatch;       //don't suspend if any of these ips is online
+	vector<DiskCfg> m_disksToMonitor;  //disk that will monitored
+	vector<string> m_cpusToMonitor;    //cpus that will be monitored
+	vector<string> m_timesToWakeAt;    //the machine will be suspended until the earliest time in this vector
+	SLEEP_MODE m_sleepMode;            //sleep mode; to RAM, to disk or standby
+	int m_checkIfIdleEvery;            //check if the machine is idle every # minutes
+	int m_stopMonitoringFor;           //if any of the ip addresses is online, stop monitoring for # minutes
+	int m_resetMonitoringAfter;        //if the machine was busy for # minutes, reset all monitoring counters
+	int m_suspendAfter;                //suspend the machine if it is idle for # minutes
+	bool m_suspendIfCpuIdle;           //should suspend if the cpu is idle?
+	bool m_suspendIfStorageIdle;       //should suspend if the storage (the selected drives) is idle
 
 public:
 	Manager() : m_sleepMode(DISK),
@@ -55,27 +65,57 @@ public:
 	            m_stopMonitoringFor(STOP_MONITORING_FOR),
 	            m_resetMonitoringAfter(RESET_MONITORING_IF_BUSY_FOR),
 	            m_suspendAfter(SUSPEND_AFTER),
-	            m_suspendIfCpuIdle(true), m_suspendIfStorageIdle(true) { };
+	            m_suspendIfCpuIdle(true), m_suspendIfStorageIdle(false) { };
 
-	void watchSystem();
+	//start monitoring the system load
+	void monitorSystemUsage();
+
+	//set which devices will be monitored
 	void setWhatToMonitor(bool suspendIfCpuIdle, bool suspendIfStorageIdle);
+
+	//the machine will not be suspended if any of these ip address is found online
 	void setIpsToWatch(const vector<string> &ipToWatch);
+
+	//the usage of all the passed in disks will be monitored
 	void setDisksToMonitor(const vector<DiskCfg> &disksToMonitor);
+
+	//the usage of the cpu will be monitored
 	void setCpusToMonitor();
+
+	//the machine will suspend until the earliest time in passed in vector
+	//time are in the format of hh:mm
 	void setTimesToWakeAt(const vector<string> &wakeAt);
+
+	//set the sleep mode that will be used if the machine is idle
+	//default is to disk
 	void setSleepMode(SLEEP_MODE sleepMode);
+
+	//monitoring tuning
 	void setTimers(int check_if_idle_every,
 				   int stop_monitoring_for,
 				   int reset_monitoring_after,
 				   int suspend_after);
 
 protected:
-	bool isSystemIdle();
-	void suspendServer();
+	//check if the machine is idle
+	bool isTheMachineIdle();
+
+	//calculate when the machine should be awake and put it to sleep
+	void suspendTheMachine();
+
+	//put the machine to sleep and set the passed in wake timer
 	void suspendUntil(double currentTimeInMinutes, double until);
+
+	//suspend using rtcwake
 	void rtcWakeSuspend(double secondsToSleep, vector<string> *output);
+
+	//suspend using pm-util
 	void pmUtilSuspend(double secondsToSleep, vector<string> *output);
-	string getSleepMode();
+
+	//return the sleep mode for rtcwake (based on what SLEEP_MODE was set)
+	string getRtcWakeSleepMode();
+
+	//return the sleep mode for pm-util (based on what SLEEP_MODE was set)
 	string getPmUtilCommand();
 };
 
