@@ -21,18 +21,18 @@
 
 using namespace std;
 
-const double TOTAL_MINUTS_IN_DAY = 1440;
+const int NETWORK_LIMIT       = 500;    //# KB/s total network traffic
+const int CPU_LIMIT           = 10;     //# % cpu usage
+const int STORAGE_READ_WRITE_LIMIT    = 400;    //#KB/s across all drives
+const int STORAGE_LOAD_LIMIT  = 10;     //# % across all drives
+const int MONITORING_THREAD_FREQUENCY = 1000; //The frequency at which the threads will monitor usage (ms)
+const int SUSPEND_OFFSET      = 5;      //set the wake up time # minutes before to allow enough warm up time
+const int SECONDS_IN_MINUTE   = 60;
+const int TOTAL_MINUTES_IN_DAY = 1440;
 
-const double NETWORK_LIMIT       = 500;    //500KB/s total network traffic
-const double CPU_LIMIT           = 10;     //10% cpu usage
-const double STORAGE_READ_WRITE_LIMIT    = 400;    //400KB/s across all drives
-const double STORAGE_LOAD_LIMIT  = 10;    //5% across all drives
-const double CPU_IDLE_INDEX      = 5;      //index of cpu idle value in iostat output
-const double DISK_READ_INDEX     = 4;      //index of disk read value in iostat output
-const double DISK_WRITE_INDEX    = 5;      //index of disk write value in iostat output
-const int    MONITORING_THREAD_FREQUENCY = 1000; //The frequency at which the threads will monitor usage (ms)
-const string BEFOR_CPU_LINE_IDENTIFIER   = "avg-cpu";   //line before cpu usage in iostat output
-const string BEFORE_DISK_LINE_IDENTIFIER = "Device";    //line before disks usage in iostat output
+const int DISK_STATS_LINE_INDEX = 0;
+const int DISK_LINE_NUM_OF_STATS = 0;
+const int NUM_OF_CPU_WORK_JIFFIES = 3;
 const string PING_IDENTIFIER = "from";    //string to look for in ping output if client is connected
 const string CONFIG_DELIMITER = ",";      //delimiter used in the config file
 

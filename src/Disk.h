@@ -25,12 +25,17 @@
 
 using namespace std;
 
+/*
+ * This class represents a single disk that will be monitored,
+ * stores, updates and exports all available statistics.
+ * This extends the class Device
+ */
 class Disk : public Device {
 
 private:
-	string m_uuid;
-	int m_sectorSize;
-	bool m_shouldSpinDownIfIdle;
+	string m_uuid;                 //disk UUID
+	int m_sectorSize;              //disk sector size
+	bool m_shouldSpinDownIfIdle;   //should spin down this disk when idle?
 
 public:
 	Disk(const string &diskName,
@@ -42,18 +47,27 @@ public:
 				 m_sectorSize(0),
 				 m_shouldSpinDownIfIdle(spinDown) { };
 
+	//initialize this disk
 	virtual void initDevice();
+
+	//start monitoring this drive's usage
 	virtual void monitorUsage();
-	virtual string getStatesFileName();
+
+	//reads the stats from the file and calculate this disk's usage
 	virtual void calculateUsage(ifstream &statesFile, DeviceUsage *diskUsage);
-	bool spinDownIfIdle() {return m_shouldSpinDownIfIdle; };
+
+	//returns the file containing the stats information for this disk
+	virtual string getStatesFileName();
 
 protected:
+	//return the sector size of this disk
 	int  getDiskSectorSize(const string &diskName);
-	void calculateDiskUsage(double *totalRead, double *totalWrite);
-	void updateReadWrite();
+
+	//get and parse all the stats for this disk
 	void getDiskStats(ifstream &statesFile, DiskStats *stats);
-	void parseDiskStats(const vector<string> &fileOutput, DiskStats *stats);
+
+	//returns whether we should spin down this disk when it's idle or not
+	bool shouldSpinDownIfIdle();
 };
 
 #endif

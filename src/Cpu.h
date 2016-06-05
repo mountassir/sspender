@@ -24,6 +24,11 @@
 
 using namespace std;
 
+/*
+ * This class represents a single cpu that will be monitored,
+ * stores, updates and exports all available statistics.
+ * This extends the class Device
+ */
 class Cpu : public Device {
 
 private:
@@ -32,12 +37,20 @@ public:
 	Cpu(const string &cpuName) :
 		Device(cpuName, true) { };
 
+	//initialize this cpu
 	virtual void initDevice();
+
+	//start monitoring this cpu's usage
 	virtual void monitorUsage();
-	virtual string getStatesFileName();
+
+	//reads the stats from the file and calculate this cpu's usage
 	virtual void calculateUsage(ifstream &statesFile, DeviceUsage *cpukUsage);
 
+	//returns the file containing the stats information for this cpu
+	virtual string getStatesFileName();
+
 protected:
+	//sum the jiffies to get the cpu load
 	void sumCpuJiffies(const vector<string> &fileOutput, int *workJiffies, int *totalJiffies);
 };
 

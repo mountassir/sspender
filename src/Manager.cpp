@@ -149,7 +149,7 @@ void Manager::monitorSystemUsage()
 			suspendTheMachine();
 		}
 
-		//check if the machine is idle every #minutes
+		//check if the machine is idle every # minutes
 		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
 	}
 }
@@ -170,33 +170,41 @@ bool Manager::isTheMachineIdle()
 	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
 	     << storageWritten << "KB/s.\n";
 
-	if(cpuLoad > CPU_LIMIT)
+	if(m_suspendIfCpuIdle)
 	{
-		if(m_suspendIfCpuIdle)
+		if(cpuLoad > CPU_LIMIT)
 		{
+			cout << "CPU     -- busy.\n";
+
 			isIdle = false;
 		}
-
-		cout << "CPU     -- busy.\n";
+		else
+		{
+			cout << "CPU     -- idle.\n";
+		}
 	}
 	else
 	{
-		cout << "CPU     -- idle.\n";
+		cout << "suspend_if_cpu_idle is false, ignoring CPU usage.\n";
 	}
 
-	if( (storageLoad > STORAGE_LOAD_LIMIT) ||
-	    (storageRead + storageWritten) > STORAGE_READ_WRITE_LIMIT)
+	if(m_suspendIfStorageIdle)
 	{
-		if(m_suspendIfStorageIdle)
+		if( (storageLoad > STORAGE_LOAD_LIMIT) ||
+			(storageRead + storageWritten) > STORAGE_READ_WRITE_LIMIT)
 		{
+			cout << "Storage -- busy.\n";
+
 			isIdle = false;
 		}
-
-		cout << "Storage -- busy.\n";
+		else
+		{
+			cout << "Storage -- idle.\n";
+		}
 	}
 	else
 	{
-		cout << "Storage -- idle.\n";
+		cout << "suspend_if_storage_idle is false, ignoring storage usage.\n";
 	}
 
 	return isIdle;
@@ -204,12 +212,14 @@ bool Manager::isTheMachineIdle()
 
 void Manager::suspendTheMachine()
 {
-	double currentTimeInMinutes = 0;  //since 00:00:00
+	double currentTimeInMinutes = 0;  //since 00:00
 
 	getCurremtTimeInMinutes(&currentTimeInMinutes);
 
 	vector<double> suspendUpTo;
 
+	//convert all passed in times to minutes from 00:00
+	//00:40 -> 40 minutes, 1:10 -> 70 minutes ...
 	for(size_t i = 0, len = m_timesToWakeAt.size(); i < len; ++i)
 	{
 		double timeInMinutes;
@@ -220,8 +230,10 @@ void Manager::suspendTheMachine()
 		}
 	}
 
+	//sort by eraliest first
 	sort(suspendUpTo.begin(), suspendUpTo.end(), sortVector);
 
+	//find the earliest time within the same day
 	for(size_t i = 0, len = suspendUpTo.size(); i < len; ++i)
 	{
 		if(currentTimeInMinutes < suspendUpTo[i])
@@ -232,6 +244,8 @@ void Manager::suspendTheMachine()
 		}
 	}
 
+	//if we hit hit code, that means that the earliest time in suspendUpTo is tomorrow
+	//we will just pick the first element in the array as that is the smallest.
 	if(suspendUpTo.size() > 0)
 	{
 		suspendUntil(currentTimeInMinutes, suspendUpTo[0]);
@@ -249,15 +263,17 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 
 	if(currentTimeInMinutes < until)
 	{
-		secondsToSleep = ((until - currentTimeInMinutes) - 5) * 60;
+		//suspend until time is on the same day
+		secondsToSleep = ((until - currentTimeInMinutes) - SUSPEND_OFFSET) * SECONDS_IN_MINUTE;
 	}
 	else
 	{
-		secondsToSleep = (until + (TOTAL_MINUTS_IN_DAY - currentTimeInMinutes) - 5) * 60;
+		//suspend until time is on the following day
+		secondsToSleep = (until + (TOTAL_MINUTES_IN_DAY - currentTimeInMinutes) - SUSPEND_OFFSET) * SECONDS_IN_MINUTE;
 	}
 
-	cout << "Got: currentTimeInMinutes (" << currentTimeInMinutes << "), until(" << until << ").\n";
-	cout << "Suspending server for " << secondsToSleep << " seconds.\n";
+	cout << "Got: current time in minutes (" << currentTimeInMinutes << "), suspend until(" << until << ").\n";
+	cout << "Suspending the machine for " << secondsToSleep << " seconds.\n";
 
 	vector<string> output;
 

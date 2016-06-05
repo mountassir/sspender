@@ -30,19 +30,34 @@
 
 using namespace std;
 
+/*
+ * This class will create and initialize all the devices that
+ * need to be monitored, this can also be called to check if
+ * the system is idle, cpu load, storage load...
+ */
 class Monitor
 {
 private:
-	vector<Disk*> m_disksToMonitor;
-	vector<Cpu*> m_cpusToMonitor;
+	vector<Disk*> m_disksToMonitor;  //all disks that need to be monitored
+	vector<Cpu*> m_cpusToMonitor;    //all the cpus that need to be monitored
 
 public:
 	Monitor();
 	~Monitor();
+
+	//get the current cpu load
 	void getCpuLoad(double *cpuUsage);
+
+	//get the storage load
 	void getStorageLoad(double *storageLoad, double *storageRead, double *storageWritten);
+
+	//check if any of the clients is online
 	bool areClientsConnected(const vector<string> &clients);
+
+	//ping and check if this ip is online
 	bool isIpAddressOnline(const string &ipAddress);
+
+	//start monitoring all the following devices
 	void monitorSystemUsage(const vector<DiskCfg> &disks,
                             const vector<string> &cpus);
 };

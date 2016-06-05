@@ -22,8 +22,11 @@ namespace
 {
 	void monitorStorageUsage(Disk *deviceToMonitor, shared_ptr<WatchDog> watchDog)
 	{
+		//we only need to open the file once
 		ifstream statesFile (deviceToMonitor->getStatesFileName());
 
+		//while the device object is still in scope
+		//call it's functions to calculate and update the usage
 		while(watchDog->shouldStillMonitor())
 		{
 			DeviceUsage diskUsage = {0, 0, 0};
@@ -37,32 +40,14 @@ namespace
 	}
 }
 
-void Disk::monitorUsage()
+void Disk::initDevice()
 {
-	if(!isDeviceInitialized())
-	{
-		initDevice();
-	}
+	m_sectorSize = getDiskSectorSize(getDeviceName());
 
-	std::thread diskMonitorThread (monitorStorageUsage, this, getWatchDogCopy());
-	diskMonitorThread.detach();
+	isDeviceInitialized(true);
 }
 
-void Disk::calculateUsage(ifstream &statesFile, DeviceUsage *diskUsage)
-{
-	DiskStats prevDiskStates, newDiskStates;
-
-	getDiskStats( statesFile, &prevDiskStates);
-
-	std::this_thread::sleep_for(std::chrono::milliseconds(MONITORING_THREAD_FREQUENCY));
-
-	getDiskStats( statesFile, &newDiskStates);
-
-	diskUsage->load = ( (newDiskStates.time_io_ticks - prevDiskStates.time_io_ticks) / MONITORING_THREAD_FREQUENCY ) * 100;
-	diskUsage->totalRead = ( (newDiskStates.num_r_sectors - prevDiskStates.num_r_sectors) * m_sectorSize ) / 1000;
-	diskUsage->totalWritten = ( (newDiskStates.num_w_sectors - prevDiskStates.num_w_sectors) * m_sectorSize ) / 1000;
-}
-
+//eg: sda stats are stored in /sys/block/sda/stat
 string Disk::getStatesFileName()
 {
 	stringstream ss;
@@ -71,23 +56,59 @@ string Disk::getStatesFileName()
 	return ss.str();
 }
 
-void Disk::initDevice()
+//make sure this disk is initialized and spawn a thread
+//that will monitor its usage in the background
+void Disk::monitorUsage()
 {
-	m_sectorSize = getDiskSectorSize(getDeviceName());
+	if(!isDeviceInitialized())
+	{
+		initDevice();
+	}
 
-	isDeviceInitialized(true);
+	std::thread diskMonitorThread (monitorStorageUsage, this, getWatchDogCopy());
+
+	diskMonitorThread.detach();
 }
 
-void Disk::parseDiskStats(const vector<string> &fileOutput, DiskStats *stats)
+void Disk::calculateUsage(ifstream &statsFile, DeviceUsage *diskUsage)
 {
+	DiskStats prevDiskStates, newDiskStates;
+
+	//read all the stats from the file
+	getDiskStats(statsFile, &prevDiskStates);
+
+	//wait for MONITORING_THREAD_FREQUENCY ms
+	std::this_thread::sleep_for(std::chrono::milliseconds(MONITORING_THREAD_FREQUENCY));
+
+	//read all the stats again
+	getDiskStats(statsFile, &newDiskStates);
+
+	//get the total time this disk has spent dealing with IO requests
+	//and get the percentage of that over the waiting time
+	diskUsage->load = ( (newDiskStates.time_io_ticks - prevDiskStates.time_io_ticks) / MONITORING_THREAD_FREQUENCY ) * 100;
+
+	//get the total read/written secrtors during the waiting time,
+	//multiply that by the sector size of the disk to get bytes
+	//and then devide it by 1000 to get the Kbytes
+	diskUsage->totalRead = ( (newDiskStates.num_r_sectors - prevDiskStates.num_r_sectors) * m_sectorSize ) / 1000;
+	diskUsage->totalWritten = ( (newDiskStates.num_w_sectors - prevDiskStates.num_w_sectors) * m_sectorSize ) / 1000;
+}
+
+void Disk::getDiskStats(ifstream &statsFile, DiskStats *stats)
+{
+	vector<string> fileOutput;
+
+	parseFile(statsFile, &fileOutput);
+
+	//make sure we got at least one line
 	if(fileOutput.size() > 0)
 	{
-		string statesLine = fileOutput[0];
+		string statesLine = fileOutput[DISK_STATS_LINE_INDEX];
 		vector<string> tokens;
 
 		splitByEmptySpace(statesLine, &tokens);
 
-		if(tokens.size() == 11)
+		if(tokens.size() == DISK_LINE_NUM_OF_STATS)
 		{
 			stats->num_r_io_processed = atoi(tokens[0].c_str());  //number of read I/Os processed
 			stats->num_r_io_merged    = atoi(tokens[1].c_str());  //number of read I/Os merged
@@ -104,15 +125,6 @@ void Disk::parseDiskStats(const vector<string> &fileOutput, DiskStats *stats)
 	}
 }
 
-void Disk::getDiskStats(ifstream &statesFile, DiskStats *stats)
-{
-	vector<string> fileOutput;
-
-	parseFile(statesFile, &fileOutput);
-
-	parseDiskStats(fileOutput, stats);
-}
-
 int Disk::getDiskSectorSize(const string &diskName)
 {
 	int sectorSize = 0;
@@ -127,6 +139,11 @@ int Disk::getDiskSectorSize(const string &diskName)
 	}
 
 	return sectorSize;
+}
+
+bool Disk::shouldSpinDownIfIdle()
+{
+	return m_shouldSpinDownIfIdle;
 }
 
 

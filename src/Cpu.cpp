@@ -22,8 +22,11 @@ namespace
 {
 	void monitorCpuUsage(Cpu *deviceToMonitor, shared_ptr<WatchDog> watchDog)
 	{
+		//we only need to open the file once
 		ifstream statesFile (deviceToMonitor->getStatesFileName());
 
+		//while the device object is still in scope
+		//call it's functions to calculate and update the usage
 		while(watchDog->shouldStillMonitor())
 		{
 			DeviceUsage cpuUsage = {0, 0, 0};
@@ -37,41 +40,12 @@ namespace
 	}
 }
 
-void Cpu::monitorUsage()
+void Cpu::initDevice()
 {
-	if(!isDeviceInitialized())
-	{
-		initDevice();
-	}
-
-	std::thread cpuMonitorThread (monitorCpuUsage, this, getWatchDogCopy());
-	cpuMonitorThread.detach();
+	isDeviceInitialized(true);
 }
 
-void Cpu::calculateUsage(ifstream &statesFile, DeviceUsage *cpuUsage)
-{
-	vector<string> fileOutput1;
-	parseFile(statesFile, &fileOutput1);
-
-	int workJiffies1, totalJiffies1;
-
-	sumCpuJiffies(fileOutput1, &workJiffies1, &totalJiffies1);
-
-	std::this_thread::sleep_for(std::chrono::milliseconds(MONITORING_THREAD_FREQUENCY));
-
-	vector<string> fileOutput2;
-	parseFile(statesFile, &fileOutput2);
-
-	int workJiffies2, totalJiffies2;
-
-	sumCpuJiffies(fileOutput2, &workJiffies2, &totalJiffies2);
-
-	double workOverPeriod = workJiffies2 - workJiffies1;
-	double totalOverPeriod = totalJiffies2 - totalJiffies1;
-
-	cpuUsage->load = (workOverPeriod / totalOverPeriod) * 100;
-}
-
+//cpu stats are stored in /proc/stat
 string Cpu::getStatesFileName()
 {
 	stringstream ss;
@@ -80,17 +54,60 @@ string Cpu::getStatesFileName()
 	return ss.str();
 }
 
-void Cpu::initDevice()
+//make sure this disk is initialized and spawn a thread
+//that will monitor its usage in the background
+void Cpu::monitorUsage()
 {
-	isDeviceInitialized(true);
+	if(!isDeviceInitialized())
+	{
+		initDevice();
+	}
+
+	std::thread cpuMonitorThread (monitorCpuUsage, this, getWatchDogCopy());
+
+	cpuMonitorThread.detach();
 }
 
+void Cpu::calculateUsage(ifstream &statesFile, DeviceUsage *cpuUsage)
+{
+	vector<string> fileOutput1;
+	parseFile(statesFile, &fileOutput1);
+
+	int prevWorkJiffies, prevTotalJiffies;
+
+	//get work and total jiffies
+	sumCpuJiffies(fileOutput1, &prevWorkJiffies, &prevTotalJiffies);
+
+	//wait for MONITORING_THREAD_FREQUENCY ms
+	std::this_thread::sleep_for(std::chrono::milliseconds(MONITORING_THREAD_FREQUENCY));
+
+	vector<string> fileOutput2;
+	parseFile(statesFile, &fileOutput2);
+
+	int newWorkJiffies, newTotalJiffies;
+
+	//get new work and total jiffies
+	sumCpuJiffies(fileOutput2, &newWorkJiffies, &newTotalJiffies);
+
+	//get the work and total period
+	double workOverPeriod = newWorkJiffies - prevWorkJiffies;
+	double totalOverPeriod = newTotalJiffies - prevTotalJiffies;
+
+	//get the percentage of work over total
+	cpuUsage->load = (workOverPeriod / totalOverPeriod) * 100;
+}
+
+//example stat line in /proc/stat:
+//cpu  204776 32504 122058 6943011 4853 20 1402 0 0 0
+//    |-------------------|
+//          work jiffies
+//    |----------------------------------------------|
+//                       all jiffies
 void Cpu::sumCpuJiffies(const vector<string> &fileOutput, int *workJiffies, int *totalJiffies)
 {
-	size_t len = fileOutput.size();
-
-	for(size_t i = 0; i < len; ++i)
+	for(size_t i = 0, len = fileOutput.size(); i < len; ++i)
 	{
+		//find the line that contains the cpu jiffies
 		size_t found = fileOutput[i].find("cpu", 0);
 
 		if ((found != string::npos) && (i < (len - 1)) )
@@ -102,13 +119,16 @@ void Cpu::sumCpuJiffies(const vector<string> &fileOutput, int *workJiffies, int 
 			*workJiffies = 0;
 			*totalJiffies = 0;
 
+			//will start from 1 as the first element is 'cpu'
 			for(size_t j = 1; j < tokens.size(); ++j)
 			{
 				int jiffiValue = atoi(tokens[j].c_str());
 
+				//everything goes in total
 				*totalJiffies += jiffiValue;
 
-				if(j < 4)
+				//the first 3 jiffies are work
+				if(j <= NUM_OF_CPU_WORK_JIFFIES)
 				{
 					*workJiffies += jiffiValue;
 				}

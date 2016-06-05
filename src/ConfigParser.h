@@ -41,6 +41,7 @@ private:
 public:
 	ConfigParser(PartitionTable & partitionTable) : m_partitionTable(partitionTable){} ;
 
+	//parse all the settings from the cfg file
 	bool loadConfigs(const string &filePath,
 			         const PartitionTable &partitionTable,
 			         vector<string> *ipToWatch,
@@ -54,27 +55,38 @@ public:
 					 int *reset_monitoring_after,
 					 int *suspend_after);
 
+	//read a file and load its content to a Config
+	bool readFile(libconfig::Config &cfg, const string &filePath);
+
+	//given a scope, look for a fieldName and saves it's value
+	//if the field does not exist then saves the default value
+	//instead (if provided)
 	template <typename T>
 	bool loockupFieldInCfgFile(const Setting& scope,
 					           const string &fieldName,
 					           T &output,
 					           const T *defaultValue = NULL);
 
-	bool readFile(libconfig::Config &cfg, const string &filePath);
+	//gets all the disks attached to the machine for monitoring
+	void getAllDisksToMonitor(vector<DiskCfg> *diskConfigs);
 
+	//parse a string containing multiple options 'option1,option2,option3'
 	void parseMultiChoiceArgs(const string &input,
 							  vector<string> *output,
 							  bool (*validator)(const string &));
 
+	//parse a string containing multiple options with 'all' being an option
+	//'option1,all,option2,option3', if 'all' is detected then allAvailableOptions
+	//will be used and all other options will be ignored
 	void parseMultiChoiceSupportingAll(const string &input,
 									   vector<string> *output,
 									   vector<string> allAvailableOptions,
 									   bool (*validator)(const string &));
 
+	//parse disk structures
 	void parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs);
 
-	void getAllDisksToMonitor(vector<DiskCfg> *diskConfigs);
-
+	//parse sleep mode field
 	void parseSleepMode(const string &inputSleepMode, SLEEP_MODE *sleepMode);
 };
 
