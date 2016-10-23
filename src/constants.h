@@ -21,6 +21,8 @@
 
 using namespace std;
 
+enum SLEEP_MODE {STAND_BY, MEM, DISK};
+
 const int NETWORK_LIMIT       = 500;    //# KB/s total network traffic
 const int CPU_LIMIT           = 10;     //# % cpu usage
 const int STORAGE_READ_WRITE_LIMIT    = 400;    //#KB/s across all drives
@@ -44,8 +46,6 @@ const int RESET_MONITORING_IF_BUSY_FOR = 3; //reset monitoring counter if found 
 const bool SUSPEND_IF_CPU_IDLE     = true;  //suspend the machine if the cpu is idle
 const bool SUSPEND_IF_STORAGE_IDLE = false; //suspend the machine if the disks are idle
 const bool SPIN_DOWN_DISK_IF_IDLE = false;   //spin down the disks when idle
-
-
-enum SLEEP_MODE {STAND_BY, MEM, DISK};
+const string  DEFAULT_SLEEP_MODE = "disk";  //Default sleep mode
 
 #endif

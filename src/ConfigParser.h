@@ -19,7 +19,6 @@
 #ifndef CONFIGPARSER_H_
 #define CONFIGPARSER_H_
 
-#include <config4cpp/Configuration.h>
 #include <libconfig.h++>
 #include <functional>
 #include <iostream>
@@ -29,7 +28,6 @@
 #include "constants.h"
 #include "PartitionTable.h"
 
-//using namespace config4cpp;
 using namespace std;
 using namespace libconfig;
 

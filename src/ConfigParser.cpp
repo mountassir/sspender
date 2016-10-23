@@ -184,7 +184,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		loockupFieldInCfgFile(settingScope, string("suspend_if_storage_idle"), *suspend_if_storage_idle, &SUSPEND_IF_STORAGE_IDLE);
 		loockupFieldInCfgFile(settingScope, string("ips_to_watch"), ips_to_watch);
 		loockupFieldInCfgFile(settingScope, string("wake_at"),      wake_at);
-		loockupFieldInCfgFile(settingScope, string("sleep_mode"),   sleep_mode);
+		loockupFieldInCfgFile(settingScope, string("sleep_mode"), sleep_mode, &DEFAULT_SLEEP_MODE);
 
 		//rootCfgFile.setting.devices
 		loockupFieldInCfgFile(deviceScope, string("all_disks"),   monitorAllDisks);
