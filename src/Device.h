@@ -78,6 +78,8 @@ public:
 	//reads the stats from the file and calculate this device's usage
 	virtual void calculateUsage(ifstream &statesFile, DeviceUsage *deviceUsage) = 0;
 
+	virtual bool shouldMonitorUsage() = 0;
+
 protected:
 	//returns this device's name
 	string& getDeviceName();

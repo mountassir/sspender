@@ -21,6 +21,7 @@
 
 #include "Device.h"
 #include "utils.h"
+#include "WatchDog.h"
 
 using namespace std;
 
@@ -48,6 +49,8 @@ public:
 
 	//returns the file containing the stats information for this cpu
 	virtual string getStatesFileName();
+
+	virtual bool shouldMonitorUsage();
 
 protected:
 	//sum the jiffies to get the cpu load

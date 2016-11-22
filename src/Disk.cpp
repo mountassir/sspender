@@ -94,6 +94,11 @@ void Disk::calculateUsage(ifstream &statsFile, DeviceUsage *diskUsage)
 	diskUsage->totalWritten = ( (newDiskStates.num_w_sectors - prevDiskStates.num_w_sectors) * m_sectorSize ) / 1000;
 }
 
+bool Disk::shouldMonitorUsage()
+{
+	return shouldSuspendIfIdle() || shouldSpinDownIfIdle();
+}
+
 void Disk::getDiskStats(ifstream &statsFile, DiskStats *stats)
 {
 	vector<string> fileOutput;

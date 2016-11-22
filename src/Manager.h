@@ -96,6 +96,12 @@ public:
 				   int reset_monitoring_after,
 				   int suspend_after);
 
+	bool canBeSuspended();
+
+	void printTheMachineUsage(double cpuLoad, double storageLoad, double storageRead, double storageWritten);
+
+	void getTheMachineUsage(double *cpuLoad, double *storageLoad, double *storageRead, double *storageWritten);
+
 protected:
 	//check if the machine is idle
 	bool isTheMachineIdle();

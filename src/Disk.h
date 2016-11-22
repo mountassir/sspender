@@ -59,6 +59,8 @@ public:
 	//returns the file containing the stats information for this disk
 	virtual string getStatesFileName();
 
+	virtual bool shouldMonitorUsage();
+
 protected:
 	//return the sector size of this disk
 	int  getDiskSectorSize(const string &diskName);

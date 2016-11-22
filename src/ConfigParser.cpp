@@ -233,7 +233,7 @@ void ConfigParser::parseDisks(const Setting& diskScope, vector<DiskCfg> *diskCon
 	{
 		DiskCfg disk;
 
-		loockupFieldInCfgFile(diskScope[i], string("no_suspend_if_not_idle"), disk.suspendIfIdle, &SUSPEND_IF_STORAGE_IDLE);
+		loockupFieldInCfgFile(diskScope[i], string("no_suspend_if_not_idle"), disk.suspendIfIdle, &NO_SUSPEND_IF_NOT_IDLE);
 		loockupFieldInCfgFile(diskScope[i], string("spind_down_if_idle"), disk.spinDown, &SPIN_DOWN_DISK_IF_IDLE);
 
 		string diskUuid, diskName;

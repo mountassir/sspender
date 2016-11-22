@@ -180,13 +180,13 @@ ostream & operator<<(ostream &os, PartitionTable &partitionTable)
 
 	while(disksIterator != table->end())
 	{
-		os << disksIterator->second.first << "\n";
+		os << "--" << disksIterator->second.first << "\n";
 
 		PartitionsConstIterator partitionIterator = disksIterator->second.second.begin();
 
 		while(partitionIterator != disksIterator->second.second.end())
 		{
-			os << "|--" << partitionIterator->second << "\n";
+			os << "    |--" << partitionIterator->second << "\n";
 
 			partitionIterator++;
 		}

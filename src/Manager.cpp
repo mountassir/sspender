@@ -104,49 +104,59 @@ void Manager::monitorSystemUsage()
 
 		printHeaderMessage("Checking if system is idle", true);
 
-		bool isIdle = isTheMachineIdle();
-
-		if(isIdle)
+		if(canBeSuspended())
 		{
-			cout << "System is idle (" << idleTimer << ").\n";
+			bool isIdle = isTheMachineIdle();
 
-			notIdleTimer = 0;
-			++idleTimer;
+			if(isIdle)
+			{
+				cout << "System is idle (" << idleTimer << ").\n";
+
+				notIdleTimer = 0;
+				++idleTimer;
+			}
+			else
+			{
+				cout << "System is not idle (" << notIdleTimer << ").\n";
+
+				++notIdleTimer;
+			}
+
+			int minutesTheMachineBeenBusyFor = notIdleTimer * m_checkIfIdleEvery;
+
+			//if system is busy for # minutes
+			if(minutesTheMachineBeenBusyFor > m_resetMonitoringAfter)
+			{
+				cout << "System was busy for more than " << m_resetMonitoringAfter
+					 << " mins, reseting idle timer.\n";
+
+				idleTimer = 0;
+				notIdleTimer = 0;
+			}
+
+			int minutesTheMachineBeenIdleFor = idleTimer * m_checkIfIdleEvery;
+
+			//if idle for # minutes
+			if(minutesTheMachineBeenIdleFor > m_suspendAfter)
+			{
+				cout << "system was idle for more than "
+					 << m_suspendAfter
+					 << " mins, will suspend the machine.\n";
+
+				idleTimer = 0;
+				notIdleTimer = 0;
+
+				printHeaderMessage("Suspending the machine", true);
+
+				suspendTheMachine();
+			}
 		}
 		else
 		{
-			cout << "System is not idle (" << notIdleTimer << ").\n";
+			double cpuLoad, storageLoad, storageRead, storageWritten;
 
-			++notIdleTimer;
-		}
-
-		int minutesTheMachineBeenBusyFor = notIdleTimer * m_checkIfIdleEvery;
-
-		//if system is busy for # minutes
-		if(minutesTheMachineBeenBusyFor > m_resetMonitoringAfter)
-		{
-			cout << "System was busy for more than " << m_resetMonitoringAfter
-				 << " mins, reseting idle timer.\n";
-
-			idleTimer = 0;
-			notIdleTimer = 0;
-		}
-
-		int minutesTheMachineBeenIdleFor = idleTimer * m_checkIfIdleEvery;
-
-		//if idle for # minutes
-		if(minutesTheMachineBeenIdleFor > m_suspendAfter)
-		{
-	        cout << "system was idle for more than "
-				 << m_suspendAfter
-				 << " mins, will suspend the machine.\n";
-
-			idleTimer = 0;
-			notIdleTimer = 0;
-
-			printHeaderMessage("Suspending the machine", true);
-
-			suspendTheMachine();
+			getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
+			printTheMachineUsage(cpuLoad, storageLoad, storageRead, storageWritten);
 		}
 
 		//check if the machine is idle every # minutes
@@ -154,21 +164,34 @@ void Manager::monitorSystemUsage()
 	}
 }
 
-bool Manager::isTheMachineIdle()
+void Manager::getTheMachineUsage(double *cpuLoad, double *storageLoad, double *storageRead, double *storageWritten)
 {
-	double cpuLoad;
-	m_monitor.getCpuLoad(&cpuLoad);
+	m_monitor.getCpuLoad(cpuLoad);
+	m_monitor.getStorageLoad(storageLoad, storageRead, storageWritten);
+}
 
-	double storageLoad, storageRead, storageWritten;
-	m_monitor.getStorageLoad(&storageLoad, &storageRead, &storageWritten);
-
-	bool isIdle = m_suspendIfCpuIdle || m_suspendIfStorageIdle;
-
-	cout << "Average CPU usage: Load - "      << cpuLoad     << "%." << "\n";
+void Manager::printTheMachineUsage(double cpuLoad, double storageLoad, double storageRead, double storageWritten)
+{
+	cout << "Average CPU usage: Load - " << cpuLoad << "%." << "\n";
 
 	cout << "Average Storage usage (across all monitored drives): Load - "
 	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
 	     << storageWritten << "KB/s.\n";
+}
+
+bool Manager::canBeSuspended()
+{
+	return m_suspendIfCpuIdle || m_suspendIfStorageIdle;
+}
+
+bool Manager::isTheMachineIdle()
+{
+	double cpuLoad, storageLoad, storageRead, storageWritten;
+
+	getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
+	printTheMachineUsage(cpuLoad, storageLoad, storageRead, storageWritten);
+
+	bool isIdle = m_suspendIfCpuIdle || m_suspendIfStorageIdle;
 
 	if(m_suspendIfCpuIdle)
 	{

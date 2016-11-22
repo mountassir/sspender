@@ -68,7 +68,7 @@ int main(int argc, char *argv[])
 		printHeaderMessage("Using the following validated configuration:", false);
 
 		cout << "\nSuspending if the CPU is idle: " << (suspend_if_cpu_idle ? "Yes" : "No");
-		cout << "\nSuspending if the selected drives are idle: " << (suspend_if_storage_idle ? "Yes" : "No");
+		cout << "\nSuspending if the storage idle: " << (suspend_if_storage_idle ? "Yes" : "No");
 
 		cout << "\nDon't suspend the machine if any of these IPs is online: ";
 		for(size_t i = 0, size = ipToWatch.size(); i < size; ++i)
@@ -79,7 +79,19 @@ int main(int argc, char *argv[])
 		cout << "\nSuspend the machine if these drives are idle: ";
 		for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
 		{
-			cout << disksToMonitor[i].diskName << ",";
+			if(disksToMonitor[i].suspendIfIdle)
+			{
+				cout << disksToMonitor[i].diskName << ",";
+			}
+		}
+
+		cout << "\nSpin down these drives if they are idle: ";
+		for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
+		{
+			if(disksToMonitor[i].spinDown)
+			{
+				cout << disksToMonitor[i].diskName << ",";
+			}
 		}
 
 		cout << "\nWake up the machine at the following times: ";

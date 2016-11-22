@@ -30,7 +30,7 @@ namespace
 
 		for(size_t i = 0; i < numberOfDevices; ++i)
 		{
-			if(devices[i]->shouldSuspendIfIdle())
+			if(devices[i]->shouldMonitorUsage())
 			{
 				DeviceUsage deviceUsage = {0, 0, 0};
 

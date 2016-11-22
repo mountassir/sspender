@@ -68,6 +68,11 @@ void Cpu::monitorUsage()
 	cpuMonitorThread.detach();
 }
 
+bool Cpu::shouldMonitorUsage()
+{
+	return shouldSuspendIfIdle();
+}
+
 void Cpu::calculateUsage(ifstream &statesFile, DeviceUsage *cpuUsage)
 {
 	vector<string> fileOutput1;
