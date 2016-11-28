@@ -35,7 +35,12 @@ class Disk : public Device {
 private:
 	string m_uuid;                 //disk UUID
 	int m_sectorSize;              //disk sector size
+	bool m_isSpinning;             //is the disk spinning
 	bool m_shouldSpinDownIfIdle;   //should spin down this disk when idle?
+
+	void spinDown();
+	bool isDiskSpinning();
+	void setSpinningState(bool spinningState);
 
 public:
 	Disk(const string &diskName,
@@ -45,6 +50,7 @@ public:
 			 Device(diskName, suspendIfIdle),
 				 m_uuid(diskUuid),
 				 m_sectorSize(0),
+				 m_isSpinning(true),
 				 m_shouldSpinDownIfIdle(spinDown) { };
 
 	//initialize this disk
@@ -60,6 +66,8 @@ public:
 	virtual string getStatesFileName();
 
 	virtual bool shouldMonitorUsage();
+
+	virtual void setIdle(bool state);
 
 protected:
 	//return the sector size of this disk

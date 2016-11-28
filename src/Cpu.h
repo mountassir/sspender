@@ -52,6 +52,8 @@ public:
 
 	virtual bool shouldMonitorUsage();
 
+	virtual void setIdle(bool state);
+
 protected:
 	//sum the jiffies to get the cpu load
 	void sumCpuJiffies(const vector<string> &fileOutput, int *workJiffies, int *totalJiffies);

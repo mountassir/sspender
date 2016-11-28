@@ -44,9 +44,10 @@ private:
 	shared_ptr<WatchDog> m_watchDog;          //used to shutdown detached threads
 	string m_deviceName;                      //name of this device
 	DeviceUsage m_currentUsage, m_avrgUsage;  //current and average usage
-	bool m_initialized;                       //to check if the device is initialized
-	bool m_shouldSuspendIfIdle;               //if true, the machine will only suspend if this device
-	                                          //(and any other device where this is true) is idle
+	bool m_initialized;                      //to check if the device is initialized
+	bool m_deviceIsIdle;                     //idle state of this device
+	bool m_shouldSuspendIfIdle;              //if true, the machine will only suspend if this device
+	                                         //(and any other device where this is true) is idle
 
 public:
 	Device(const string &deviceName, bool suspendIfIdle);
@@ -55,6 +56,7 @@ public:
 	//getters
 	void getCurrentUsage(DeviceUsage *deviceUsage);
 	void getAvrgUsage(DeviceUsage *deviceUsage);
+	bool getIdleState();
 
 	//setters
 	void setUsage(const DeviceUsage &deviceUsage);
@@ -79,6 +81,8 @@ public:
 	virtual void calculateUsage(ifstream &statesFile, DeviceUsage *deviceUsage) = 0;
 
 	virtual bool shouldMonitorUsage() = 0;
+
+	virtual void setIdle(bool state) = 0;
 
 protected:
 	//returns this device's name
@@ -109,8 +113,12 @@ protected:
 	//this is a kill switch for the detached thread that will be monitoring this device
 	void setMonitoringState(bool monitoringState);
 
+	void setIdleState(bool state);
+
 	//get a pointer this device's watch dog, will be used by the detached thread
 	shared_ptr<WatchDog> getWatchDogCopy();
+
+	static void monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> watchDog);
 };
 
 #endif

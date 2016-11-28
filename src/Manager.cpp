@@ -73,11 +73,11 @@ void Manager::setTimers(int check_if_idle_every,
 
 void Manager::monitorSystemUsage()
 {
-	int idleTimer = 0;
-	int notIdleTimer = 0;
-
 	//start monitoring the usage of the passed in devices
 	m_monitor.monitorSystemUsage(m_disksToMonitor, m_cpusToMonitor);
+
+	auto idleStartTime = Clock::now();
+	auto notIdleStartTime = Clock::now();
 
 	while(true)
 	{
@@ -94,10 +94,10 @@ void Manager::monitorSystemUsage()
 			//if any of the specified IPs is online, reset the counters and
 			//stop checking if the machine is idle, note that the usage of
 			//the devices will still be monitored by the detached threads
-			idleTimer = 0;
-			notIdleTimer = 0;
-
 			std::this_thread::sleep_for(std::chrono::minutes(m_stopMonitoringFor));
+
+			idleStartTime = Clock::now();
+			notIdleStartTime = Clock::now();
 
 			continue;
 		}
@@ -108,21 +108,19 @@ void Manager::monitorSystemUsage()
 		{
 			bool isIdle = isTheMachineIdle();
 
+			double minutesTheMachineBeenBusyFor = getMinutesDuration(notIdleStartTime);
+			double minutesTheMachineBeenIdleFor = getMinutesDuration(idleStartTime);
+
 			if(isIdle)
 			{
-				cout << "System is idle (" << idleTimer << ").\n";
+				cout << "System is idle (" << minutesTheMachineBeenIdleFor << " minutes).\n";
 
-				notIdleTimer = 0;
-				++idleTimer;
+				notIdleStartTime = Clock::now();
 			}
 			else
 			{
-				cout << "System is not idle (" << notIdleTimer << ").\n";
-
-				++notIdleTimer;
+				cout << "System is not idle (" << minutesTheMachineBeenBusyFor << " minutes).\n";
 			}
-
-			int minutesTheMachineBeenBusyFor = notIdleTimer * m_checkIfIdleEvery;
 
 			//if system is busy for # minutes
 			if(minutesTheMachineBeenBusyFor > m_resetMonitoringAfter)
@@ -130,11 +128,9 @@ void Manager::monitorSystemUsage()
 				cout << "System was busy for more than " << m_resetMonitoringAfter
 					 << " mins, reseting idle timer.\n";
 
-				idleTimer = 0;
-				notIdleTimer = 0;
+				idleStartTime = Clock::now();
+				notIdleStartTime = Clock::now();
 			}
-
-			int minutesTheMachineBeenIdleFor = idleTimer * m_checkIfIdleEvery;
 
 			//if idle for # minutes
 			if(minutesTheMachineBeenIdleFor > m_suspendAfter)
@@ -143,12 +139,12 @@ void Manager::monitorSystemUsage()
 					 << m_suspendAfter
 					 << " mins, will suspend the machine.\n";
 
-				idleTimer = 0;
-				notIdleTimer = 0;
-
 				printHeaderMessage("Suspending the machine", true);
 
 				suspendTheMachine();
+
+				idleStartTime = Clock::now();
+				notIdleStartTime = Clock::now();
 			}
 		}
 		else

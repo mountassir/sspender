@@ -18,28 +18,6 @@
 
 #include "Disk.h"
 
-namespace
-{
-	void monitorStorageUsage(Disk *deviceToMonitor, shared_ptr<WatchDog> watchDog)
-	{
-		//we only need to open the file once
-		ifstream statesFile (deviceToMonitor->getStatesFileName());
-
-		//while the device object is still in scope
-		//call it's functions to calculate and update the usage
-		while(watchDog->shouldStillMonitor())
-		{
-			DeviceUsage diskUsage = {0, 0, 0};
-
-			deviceToMonitor->calculateUsage(statesFile, &diskUsage);
-
-			deviceToMonitor->setUsage(diskUsage);
-		}
-
-		statesFile.close();
-	}
-}
-
 void Disk::initDevice()
 {
 	m_sectorSize = getDiskSectorSize(getDeviceName());
@@ -65,7 +43,7 @@ void Disk::monitorUsage()
 		initDevice();
 	}
 
-	std::thread diskMonitorThread (monitorStorageUsage, this, getWatchDogCopy());
+	std::thread diskMonitorThread (monitorDeviceUsage, this, getWatchDogCopy());
 
 	diskMonitorThread.detach();
 }
@@ -85,13 +63,27 @@ void Disk::calculateUsage(ifstream &statsFile, DeviceUsage *diskUsage)
 
 	//get the total time this disk has spent dealing with IO requests
 	//and get the percentage of that over the waiting time
-	diskUsage->load = ( (newDiskStates.time_io_ticks - prevDiskStates.time_io_ticks) / MONITORING_THREAD_FREQUENCY ) * 100;
+	diskUsage->load = ( double(newDiskStates.time_io_ticks - prevDiskStates.time_io_ticks) / MONITORING_THREAD_FREQUENCY ) * 100;
 
 	//get the total read/written secrtors during the waiting time,
 	//multiply that by the sector size of the disk to get bytes
 	//and then devide it by 1000 to get the Kbytes
-	diskUsage->totalRead = ( (newDiskStates.num_r_sectors - prevDiskStates.num_r_sectors) * m_sectorSize ) / 1000;
-	diskUsage->totalWritten = ( (newDiskStates.num_w_sectors - prevDiskStates.num_w_sectors) * m_sectorSize ) / 1000;
+	diskUsage->totalRead = ( double(newDiskStates.num_r_sectors - prevDiskStates.num_r_sectors) * m_sectorSize ) / 1000;
+	diskUsage->totalWritten = ( double(newDiskStates.num_w_sectors - prevDiskStates.num_w_sectors) * m_sectorSize ) / 1000;
+}
+
+void Disk::setIdle(bool state)
+{
+	setIdleState(state);
+
+	if(state)
+	{
+		spinDown();
+	}
+	else
+	{
+		setSpinningState(true);
+	}
 }
 
 bool Disk::shouldMonitorUsage()
@@ -144,6 +136,28 @@ int Disk::getDiskSectorSize(const string &diskName)
 	}
 
 	return sectorSize;
+}
+
+void Disk::spinDown()
+{
+	if(isDiskSpinning())
+	{
+		cout << "Spinning down drive " << getDeviceName() << endl;
+
+		string suspendCommand = "sudo hdparm -Y /dev/" + getDeviceName();
+
+		setSpinningState(false);
+	}
+}
+
+bool Disk::isDiskSpinning()
+{
+	return m_isSpinning;
+}
+
+void Disk::setSpinningState(bool spinningState)
+{
+	m_isSpinning = spinningState;
 }
 
 bool Disk::shouldSpinDownIfIdle()

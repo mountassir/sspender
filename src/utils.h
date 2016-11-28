@@ -29,8 +29,12 @@
 #include <iostream>
 #include <cstring>
 #include <ctime>
+#include <chrono>
 
 using namespace std;
+
+typedef std::chrono::high_resolution_clock Clock;
+typedef std::chrono::time_point<std::chrono::system_clock> TimePoint;
 
 struct DiskCfg
 {
@@ -82,6 +86,7 @@ void splitByEmptySpace(const string &input, vector<string> *output);
 bool runSystemCommand(const string &command, vector<string> *output = NULL);
 double getDoubleFromSystemCall(const string &command);
 double roundValue(double value);
+double getMinutesDuration(const TimePoint& startTime);
 string trimString(string input);
 string charTostring(const char *input);
 void splitStringByDelimiter(vector<string> *output,

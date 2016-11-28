@@ -18,28 +18,6 @@
 
 #include "Cpu.h"
 
-namespace
-{
-	void monitorCpuUsage(Cpu *deviceToMonitor, shared_ptr<WatchDog> watchDog)
-	{
-		//we only need to open the file once
-		ifstream statesFile (deviceToMonitor->getStatesFileName());
-
-		//while the device object is still in scope
-		//call it's functions to calculate and update the usage
-		while(watchDog->shouldStillMonitor())
-		{
-			DeviceUsage cpuUsage = {0, 0, 0};
-
-			deviceToMonitor->calculateUsage(statesFile, &cpuUsage);
-
-			deviceToMonitor->setUsage(cpuUsage);
-		}
-
-		statesFile.close();
-	}
-}
-
 void Cpu::initDevice()
 {
 	isDeviceInitialized(true);
@@ -63,7 +41,7 @@ void Cpu::monitorUsage()
 		initDevice();
 	}
 
-	std::thread cpuMonitorThread (monitorCpuUsage, this, getWatchDogCopy());
+	std::thread cpuMonitorThread (monitorDeviceUsage, this, getWatchDogCopy());
 
 	cpuMonitorThread.detach();
 }
@@ -71,6 +49,11 @@ void Cpu::monitorUsage()
 bool Cpu::shouldMonitorUsage()
 {
 	return shouldSuspendIfIdle();
+}
+
+void Cpu::setIdle(bool state)
+{
+	setIdleState(state);
 }
 
 void Cpu::calculateUsage(ifstream &statesFile, DeviceUsage *cpuUsage)

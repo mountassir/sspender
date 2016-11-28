@@ -167,6 +167,13 @@ double roundValue(double value)
 	return floor( value * 100.00 + 0.5 ) / 100.00;
 }
 
+double getMinutesDuration(const TimePoint& startTime)
+{
+	auto endTime = Clock::now();
+
+	return chrono::duration_cast<chrono::minutes>(endTime - startTime).count();
+}
+
 void splitStringByDelimiter(vector<string> *output,
 		                    const string &input,
 		                    const string &delimiter)

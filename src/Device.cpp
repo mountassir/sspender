@@ -24,6 +24,7 @@ Device::Device(const string &deviceName, bool suspendIfIdle)
 	m_currentUsage.load = 0;
 	m_watchDog.reset(new WatchDog(true));
 	m_initialized = false;
+	m_deviceIsIdle = false;
 	m_shouldSuspendIfIdle = suspendIfIdle;
 
 	resetUsage();
@@ -87,6 +88,20 @@ void Device::getAvrgUsage(DeviceUsage *deviceUsage)
 	copyDeviceUsage(m_avrgUsage, deviceUsage);
 }
 
+bool Device::getIdleState()
+{
+	std::lock_guard<mutex> locker(m_mutex);
+
+	return m_deviceIsIdle;
+}
+
+void Device::setIdleState(bool state)
+{
+	std::lock_guard<mutex> locker(m_mutex);
+
+	m_deviceIsIdle = state;
+}
+
 void Device::copyDeviceUsage(const DeviceUsage &input, DeviceUsage *output)
 {
 	output->load = input.load;
@@ -109,15 +124,17 @@ void Device::resetUsage(DeviceUsage *deviceUsage)
 
 void Device::setUsage(const DeviceUsage &deviceUsage)
 {
-	std::lock_guard<mutex> locker(m_mutex);
-
 	updateAverageUsage(deviceUsage);
+
+	std::lock_guard<mutex> locker(m_mutex);
 
 	m_currentUsage = deviceUsage;
 }
 
 void Device::updateAverageUsage(const DeviceUsage &deviceUsage)
 {
+	std::lock_guard<mutex> locker(m_mutex);
+
 	m_avrgUsage.load         = updateAverageValue(m_avrgUsage.load,         deviceUsage.load);
 	m_avrgUsage.totalRead    = updateAverageValue(m_avrgUsage.totalRead,    deviceUsage.totalRead);
 	m_avrgUsage.totalWritten = updateAverageValue(m_avrgUsage.totalWritten, deviceUsage.totalWritten);
@@ -141,4 +158,40 @@ double Device::updateAverageValue(double currentAverageValue, double currentValu
 	}
 
 	return newAverageValue;
+}
+
+void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> watchDog)
+{
+	//we only need to open the file once
+	ifstream statesFile (deviceToMonitor->getStatesFileName());
+
+	auto startTime = Clock::now();
+
+	//while the device object is still in scope
+	//call it's functions to calculate and update the usage
+	while(watchDog->shouldStillMonitor())
+	{
+		DeviceUsage diskUsage = {0, 0, 0};
+
+		deviceToMonitor->calculateUsage(statesFile, &diskUsage);
+
+		deviceToMonitor->setUsage(diskUsage);
+
+		if(diskUsage.load > 10)
+		{
+			deviceToMonitor->setIdle(false);
+			startTime = Clock::now();
+		}
+		else
+		{
+			double duration = getMinutesDuration(startTime);
+
+			if(duration > 1)
+			{
+				deviceToMonitor->setIdle(true);
+			}
+		}
+	}
+
+	statesFile.close();
 }
