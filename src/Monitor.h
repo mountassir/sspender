@@ -60,6 +60,8 @@ public:
 	//start monitoring all the following devices
 	void monitorSystemUsage(const vector<DiskCfg> &disks,
                             const vector<string> &cpus);
+
+	void printTheMachineUsage();
 };
 
 #endif

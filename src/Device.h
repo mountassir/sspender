@@ -58,6 +58,9 @@ public:
 	void getAvrgUsage(DeviceUsage *deviceUsage);
 	bool getIdleState();
 
+	//returns this device's name
+	string& getDeviceName();
+
 	//setters
 	void setUsage(const DeviceUsage &deviceUsage);
 
@@ -85,9 +88,6 @@ public:
 	virtual void setIdle(bool state) = 0;
 
 protected:
-	//returns this device's name
-	string& getDeviceName();
-
 	//check if the device is initialized
 	bool isDeviceInitialized();
 

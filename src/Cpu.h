@@ -59,4 +59,6 @@ protected:
 	void sumCpuJiffies(const vector<string> &fileOutput, int *workJiffies, int *totalJiffies);
 };
 
+ostream & operator<<(ostream &os, Cpu &disk);
+
 #endif

@@ -142,22 +142,7 @@ void Device::updateAverageUsage(const DeviceUsage &deviceUsage)
 
 double Device::updateAverageValue(double currentAverageValue, double currentValue)
 {
-	double newAverageValue =0 ;
-
-	if(currentAverageValue == 0)
-	{
-		//if the current average value is = 0 (got the first value),
-		//average is the new value.
-		newAverageValue = currentValue;
-	}
-	else
-	{
-		//if the current average value is != 0 (already have an average),
-		//average is (oldAverage + newValue) / 2
-		newAverageValue += (currentAverageValue + currentValue) / 2;
-	}
-
-	return newAverageValue;
+	return (currentAverageValue + currentValue) / 2;
 }
 
 void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> watchDog)

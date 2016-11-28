@@ -116,6 +116,19 @@ void Monitor::getStorageLoad(double *storageLoad, double *storageRead, double *s
 	*storageWritten = roundValue(averageUsage.totalWritten);
 }
 
+void Monitor::printTheMachineUsage()
+{
+	for(size_t i = 0, len = m_cpusToMonitor.size(); i < len; ++i)
+	{
+		cout << *(m_cpusToMonitor[i]) << endl;
+	}
+
+	for(size_t i = 0, len = m_disksToMonitor.size(); i < len; ++i)
+	{
+		cout << *(m_disksToMonitor[i]) << endl;
+	}
+}
+
 bool Monitor::areClientsConnected(const vector<string> &clients)
 {
 	bool isAnyClientOnline = false;

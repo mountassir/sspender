@@ -168,11 +168,13 @@ void Manager::getTheMachineUsage(double *cpuLoad, double *storageLoad, double *s
 
 void Manager::printTheMachineUsage(double cpuLoad, double storageLoad, double storageRead, double storageWritten)
 {
-	cout << "Average CPU usage: Load - " << cpuLoad << "%." << "\n";
+//	cout << "Average CPU usage: Load - " << cpuLoad << "%." << "\n";
+//
+//	cout << "Average Storage usage (across all monitored drives): Load - "
+//	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
+//	     << storageWritten << "KB/s.\n";
 
-	cout << "Average Storage usage (across all monitored drives): Load - "
-	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
-	     << storageWritten << "KB/s.\n";
+	m_monitor.printTheMachineUsage();
 }
 
 bool Manager::canBeSuspended()

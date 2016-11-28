@@ -80,4 +80,6 @@ protected:
 	bool shouldSpinDownIfIdle();
 };
 
+ostream & operator<<(ostream &os, Disk &disk);
+
 #endif
