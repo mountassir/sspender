@@ -176,7 +176,7 @@ ostream & operator<<(ostream &os, Disk &disk)
 	disk.getAvrgUsage(&deviceUsage);
 
 	os << disk.getDeviceName() << " -" << (disk.getIdleState() ? " idle " : " busy") << "\n";
-	os << "Load: " << deviceUsage.load <<  "%, Read - " << deviceUsage.totalRead << "KB/s, Written - " << deviceUsage.totalWritten << "KB/s.\n";
+	os << "Load - " << deviceUsage.load <<  "%, Read - " << deviceUsage.totalRead << "KB/s, Written - " << deviceUsage.totalWritten << "KB/s.\n";
 
 	return os;
 }

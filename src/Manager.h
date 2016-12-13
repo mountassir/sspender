@@ -98,7 +98,7 @@ public:
 
 	bool canBeSuspended();
 
-	void printTheMachineUsage(double cpuLoad, double storageLoad, double storageRead, double storageWritten);
+	void printTheMachineUsage();
 
 	void getTheMachineUsage(double *cpuLoad, double *storageLoad, double *storageRead, double *storageWritten);
 

@@ -35,7 +35,6 @@ namespace
 				DeviceUsage deviceUsage = {0, 0, 0};
 
 				devices[i]->getAvrgUsage(&deviceUsage);
-				devices[i]->resetUsage();
 
 				totalUsage->load         += deviceUsage.load;
 				totalUsage->totalRead    += deviceUsage.totalRead;
@@ -48,6 +47,12 @@ namespace
 		averageUsage->load         += totalUsage->load / numberOfMonitoredDevices;
 		averageUsage->totalRead    += totalUsage->totalRead / numberOfMonitoredDevices;
 		averageUsage->totalWritten += totalUsage->totalWritten / numberOfMonitoredDevices;
+	}
+
+	template <typename T>
+	inline void sumDevicesUsage (const T &devices)
+	{
+		devices->resetUsage();
 	}
 }
 
@@ -120,13 +125,34 @@ void Monitor::printTheMachineUsage()
 {
 	for(size_t i = 0, len = m_cpusToMonitor.size(); i < len; ++i)
 	{
-		cout << *(m_cpusToMonitor[i]) << endl;
+		cout << *(m_cpusToMonitor[i]) << "\n";
 	}
 
 	for(size_t i = 0, len = m_disksToMonitor.size(); i < len; ++i)
 	{
-		cout << *(m_disksToMonitor[i]) << endl;
+		cout << *(m_disksToMonitor[i]) << "\n";
 	}
+}
+
+bool Monitor::isTheMachineIdle()
+{
+	for(size_t i = 0, len = m_cpusToMonitor.size(); i < len; ++i)
+	{
+		if(m_cpusToMonitor[i]->shouldSuspendIfIdle() && !m_cpusToMonitor[i]->getIdleState())
+		{
+			return false;
+		}
+	}
+
+	for(size_t i = 0, len = m_disksToMonitor.size(); i < len; ++i)
+	{
+		if(m_disksToMonitor[i]->shouldSuspendIfIdle() && !m_disksToMonitor[i]->getIdleState())
+		{
+			return false;
+		}
+	}
+
+	return true;
 }
 
 bool Monitor::areClientsConnected(const vector<string> &clients)

@@ -131,7 +131,7 @@ ostream & operator<<(ostream &os, Cpu &cpu)
 	cpu.getAvrgUsage(&deviceUsage);
 
 	os << cpu.getDeviceName() << " -" << (cpu.getIdleState() ? " idle " : " busy") << "\n";
-	os << "Load: " << deviceUsage.load <<  "%\n";
+	os << "Load - " << deviceUsage.load <<  "%\n";
 
 	return os;
 }

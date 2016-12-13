@@ -62,6 +62,8 @@ public:
                             const vector<string> &cpus);
 
 	void printTheMachineUsage();
+
+	bool isTheMachineIdle();
 };
 
 #endif

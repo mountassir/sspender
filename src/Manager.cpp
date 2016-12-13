@@ -149,14 +149,12 @@ void Manager::monitorSystemUsage()
 		}
 		else
 		{
-			double cpuLoad, storageLoad, storageRead, storageWritten;
-
-			getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
-			printTheMachineUsage(cpuLoad, storageLoad, storageRead, storageWritten);
+			printTheMachineUsage();
 		}
 
 		//check if the machine is idle every # minutes
-		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
+		//std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
+		std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 }
 
@@ -166,8 +164,12 @@ void Manager::getTheMachineUsage(double *cpuLoad, double *storageLoad, double *s
 	m_monitor.getStorageLoad(storageLoad, storageRead, storageWritten);
 }
 
-void Manager::printTheMachineUsage(double cpuLoad, double storageLoad, double storageRead, double storageWritten)
+void Manager::printTheMachineUsage()
 {
+//	double cpuLoad, storageLoad, storageRead, storageWritten;
+//
+//	getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
+//
 //	cout << "Average CPU usage: Load - " << cpuLoad << "%." << "\n";
 //
 //	cout << "Average Storage usage (across all monitored drives): Load - "
@@ -184,51 +186,7 @@ bool Manager::canBeSuspended()
 
 bool Manager::isTheMachineIdle()
 {
-	double cpuLoad, storageLoad, storageRead, storageWritten;
-
-	getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
-	printTheMachineUsage(cpuLoad, storageLoad, storageRead, storageWritten);
-
-	bool isIdle = m_suspendIfCpuIdle || m_suspendIfStorageIdle;
-
-	if(m_suspendIfCpuIdle)
-	{
-		if(cpuLoad > CPU_LIMIT)
-		{
-			cout << "CPU     -- busy.\n";
-
-			isIdle = false;
-		}
-		else
-		{
-			cout << "CPU     -- idle.\n";
-		}
-	}
-	else
-	{
-		cout << "suspend_if_cpu_idle is false, ignoring CPU usage.\n";
-	}
-
-	if(m_suspendIfStorageIdle)
-	{
-		if( (storageLoad > STORAGE_LOAD_LIMIT) ||
-			(storageRead + storageWritten) > STORAGE_READ_WRITE_LIMIT)
-		{
-			cout << "Storage -- busy.\n";
-
-			isIdle = false;
-		}
-		else
-		{
-			cout << "Storage -- idle.\n";
-		}
-	}
-	else
-	{
-		cout << "suspend_if_storage_idle is false, ignoring storage usage.\n";
-	}
-
-	return isIdle;
+	return m_monitor.isTheMachineIdle();
 }
 
 void Manager::suspendTheMachine()
