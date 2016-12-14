@@ -24,21 +24,17 @@ bool PartitionTable::isPartitionValid(const string &partitionName, string *paren
 
 	while(disksIterator != m_partitionTable.end())
 	{
-		PartitionsConstIterator partitionIterator = disksIterator->second.second.begin();
-
-		while(partitionIterator != disksIterator->second.second.end())
+		for(size_t i = 0, len = disksIterator->second.size(); i < len; ++i)
 		{
-			if(partitionIterator->second == partitionName)
+			if(disksIterator->second[i] == partitionName)
 			{
 				if(parentDisk)
 				{
-					*parentDisk = disksIterator->second.first;
+					*parentDisk = disksIterator->second[i];
 				}
 
 				return true;
 			}
-
-			partitionIterator++;
 		}
 
 		disksIterator++;
@@ -53,7 +49,7 @@ bool PartitionTable::isDiskValid(const string &diskName)
 
 	while(disksIterator != m_partitionTable.end())
 	{
-		if(disksIterator->second.first == diskName)
+		if(disksIterator->first == diskName)
 		{
 			return true;
 		}
@@ -83,59 +79,58 @@ void PartitionTable::loadPartitionTable()
 			int deviceMajor = atoi(splitLine[0].c_str());
 			int deviceMinor = atoi(splitLine[1].c_str());
 			string deviceName = splitLine[3];
+			string parentDisk;
+
+			parentDiskOfBlockDevice(deviceName, &parentDisk);
 
 			if(deviceMinor == 0) //got a disk
 			{
-				insertDisk(deviceMajor, deviceName);
+				insertDisk(deviceName);
 			}
 			else
 			if(deviceMinor > 0) //got a partition
 			{
-				insertPartition(deviceMajor, deviceMinor, deviceName);
+				insertPartition(deviceName, deviceName);
 			}
 		}
 	}
 }
 
-bool PartitionTable::insertDisk(int majorId, const string &diskName)
+bool PartitionTable::insertDisk(const string &diskName)
 {
-	PartitionsTableConstIterator diskIter = m_partitionTable.find(majorId);
+	PartitionsTableConstIterator diskIter = m_partitionTable.find(diskName);
 
 	if(diskIter != m_partitionTable.end())
 	{
-		cout << "Disk with major id '" << majorId << "' already exists\n";
+		cout << "Disk '" << diskName << "' already exists\n";
 	}
 	else
 	{
-		Partitions emptyPartitionList;
-		DiskTree diskTree(diskName, emptyPartitionList);
+		std::vector<string> partirions;
 
-		DiskKey newDisk (majorId, diskTree);
+		DiskKey newDisk (diskName, partirions);
 
 		PartitionsTableInsert insert = m_partitionTable.insert(newDisk);
 
 		return insert.second;
 	}
 
-
 	return false;
 }
 
-bool PartitionTable::insertPartition(int majorId, int minorId, const string &partitionName)
+bool PartitionTable::insertPartition(const string &diskName, const string &partitionName)
 {
-	PartitionsTableIterator diskIter = m_partitionTable.find(majorId);
+	PartitionsTableIterator diskIter = m_partitionTable.find(diskName);
 
 	if(diskIter != m_partitionTable.end())
 	{
-		PartitionkKey newPartition (minorId, partitionName);
+		diskIter->second.push_back(partitionName);
 
-		PartitionsInsert insert = diskIter->second.second.insert(newPartition);
-
-		return insert.second;
+		return true;
 	}
 	else
 	{
-		cout << "Disk with major id '" << majorId << "' was not found\n";
+		cout << "Disk '" << diskName << "' was not found\n";
 	}
 
 	return false;
@@ -147,7 +142,7 @@ void PartitionTable::getAllDisks(vector<string> *disks)
 
 	while(disksIterator != m_partitionTable.end())
 	{
-		disks->push_back(disksIterator->second.first);
+		disks->push_back(disksIterator->first);
 
 		disksIterator++;
 	}
@@ -159,13 +154,9 @@ void PartitionTable::getAllPartitions(vector<string> *partitions)
 
 	while(disksIterator != m_partitionTable.end())
 	{
-		PartitionsConstIterator partitionIterator = disksIterator->second.second.begin();
-
-		while(partitionIterator != disksIterator->second.second.end())
+		for(size_t i = 0, len = disksIterator->second.size(); i < len; ++i)
 		{
-			partitions->push_back(partitionIterator->second);
-
-			partitionIterator++;
+			partitions->push_back(disksIterator->second[i]);
 		}
 
 		disksIterator++;
@@ -180,15 +171,11 @@ ostream & operator<<(ostream &os, PartitionTable &partitionTable)
 
 	while(disksIterator != table->end())
 	{
-		os << "--" << disksIterator->second.first << "\n";
+		os << "--" << disksIterator->first << "\n";
 
-		PartitionsConstIterator partitionIterator = disksIterator->second.second.begin();
-
-		while(partitionIterator != disksIterator->second.second.end())
+		for(size_t i = 0, len = disksIterator->second.size(); i < len; ++i)
 		{
-			os << "    |--" << partitionIterator->second << "\n";
-
-			partitionIterator++;
+			os << "    |--" << disksIterator->second[i] << "\n";
 		}
 
 		disksIterator++;

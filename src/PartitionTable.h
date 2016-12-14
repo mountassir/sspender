@@ -26,28 +26,22 @@
 
 using namespace std;
 
-typedef map<int, string> Partitions;
-typedef pair<string, Partitions> DiskTree;
-typedef map<int, DiskTree> PartitionsTable;
+typedef map<string, std::vector<string>> PartitionsTable;
 
-typedef pair<int, DiskTree> DiskKey;
-typedef pair<int, string> PartitionkKey;
+typedef pair<string, std::vector<string>> DiskKey;
 
 typedef PartitionsTable::iterator PartitionsTableIterator;
 typedef PartitionsTable::const_iterator PartitionsTableConstIterator;
-typedef Partitions::iterator PartitionsIterator;
-typedef Partitions::const_iterator PartitionsConstIterator;
 
 typedef pair<PartitionsTableIterator, bool> PartitionsTableInsert;
-typedef pair<PartitionsIterator, bool> PartitionsInsert;
 
 class PartitionTable
 {
 private:
 	PartitionsTable m_partitionTable;
 
-	bool insertDisk(int majorId, const string &diskName);
-	bool insertPartition(int majorId, int minorId, const string &partitionName);
+	bool insertDisk(const string &diskName);
+	bool insertPartition(const string &diskName, const string &partitionName);
 
 public:
 	void loadPartitionTable();

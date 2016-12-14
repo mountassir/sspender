@@ -41,7 +41,36 @@ bool uuidToDiskName(const string &uuid, string *diskName)
 		}
 		else
 		{
-			cout << firstLine << endl;
+			cout << firstLine << "\n";
+		}
+	}
+
+	return false;
+}
+
+bool parentDiskOfBlockDevice(const string &blockDevice, string *diskName)
+{
+	string command = "readlink /sys/class/block/" + blockDevice;
+
+	vector<string> output;
+
+	bool commandExecuted = runSystemCommand(command, &output);
+
+	if(commandExecuted && output.size() > 0)
+	{
+		string firstLine = output[0];
+
+		vector<string> splitLine;
+
+		splitStringByDelimiter(&splitLine, firstLine, "/");
+
+		if(splitLine.size() > 1)
+		{
+			*diskName = splitLine[splitLine.size() - 2 ];cout << blockDevice << "-->" << *diskName<<endl;
+		}
+		else
+		{
+			cout << "Could not read link " << command << "\n";
 		}
 	}
 

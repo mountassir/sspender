@@ -94,6 +94,7 @@ void splitStringByDelimiter(vector<string> *output,
 		                    const string &delimiter);
 void parseFile(const string & fileName, vector<string>* fileOutput);
 void parseFile(ifstream &file, vector<string>* fileOutput);
+bool parentDiskOfBlockDevice(const string &blockDevice, string *diskName);
 string getCurrentDateTime();
 
 #endif
