@@ -23,10 +23,7 @@ using namespace std;
 
 enum SLEEP_MODE {STAND_BY, MEM, DISK};
 
-const int NETWORK_LIMIT       = 500;    //# KB/s total network traffic
-const int CPU_LIMIT           = 10;     //# % cpu usage
 const int STORAGE_READ_WRITE_LIMIT    = 400;    //#KB/s across all drives
-const int STORAGE_LOAD_LIMIT  = 10;     //# % across all drives
 const int MONITORING_THREAD_FREQUENCY = 1000; //The frequency at which the threads will monitor usage (ms)
 const int SUSPEND_OFFSET      = 5;      //set the wake up time # minutes before to allow enough warm up time
 const int SECONDS_IN_MINUTE   = 60;
@@ -42,11 +39,13 @@ const string CONFIG_DELIMITER = ",";      //delimiter used in the config file
 const int SUSPEND_AFTER       = 15;         //suspend system if idle for more than (x minute)
 const int CHECK_IF_IDLE_EVERY = 1;          //check if system is idle every (x minute)
 const int STOP_MONITORING_FOR = 5;          //stop monitoring system for (x minute)
+const int IDLE_LOAD_THRESHOLD = 5;          //Idle load threshold
+const int IDLE_TIME_THRESHOLD = 1;          //Idle time threshold
 const int RESET_MONITORING_IF_BUSY_FOR = 3; //reset monitoring counter if found busy (x minute)
 const bool SUSPEND_IF_CPU_IDLE     = true;  //suspend the machine if the cpu is idle
 const bool SUSPEND_IF_STORAGE_IDLE = false; //suspend the machine if the storage are idle
 const bool NO_SUSPEND_IF_NOT_IDLE  = true;  //server cannot be suspended if this drive is busy
-const bool SPIN_DOWN_DISK_IF_IDLE = false;   //spin down the disks when idle
-const string  DEFAULT_SLEEP_MODE = "disk";  //Default sleep mode
+const bool SPIN_DOWN_DISK_IF_IDLE  = false; //spin down the disks when idle
+const string  DEFAULT_SLEEP_MODE   = "disk"; //Default sleep mode
 
 #endif

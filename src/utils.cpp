@@ -66,7 +66,7 @@ bool parentDiskOfBlockDevice(const string &blockDevice, string *diskName)
 
 		if(splitLine.size() > 1)
 		{
-			*diskName = splitLine[splitLine.size() - 2 ];cout << blockDevice << "-->" << *diskName<<endl;
+			*diskName = splitLine[splitLine.size() - 2 ];
 		}
 		else
 		{

@@ -30,7 +30,7 @@ bool PartitionTable::isPartitionValid(const string &partitionName, string *paren
 			{
 				if(parentDisk)
 				{
-					*parentDisk = disksIterator->second[i];
+					*parentDisk = disksIterator->first;
 				}
 
 				return true;
@@ -60,6 +60,24 @@ bool PartitionTable::isDiskValid(const string &diskName)
 	return false;
 }
 
+bool PartitionTable::isBlockValid(const string &blockName)
+{
+	for(size_t i = 1, size = m_allValidBlocks.size(); i < size; ++i)
+	{
+		if(m_allValidBlocks[i].compare(blockName) == 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool PartitionTable::isRealDisk(const string &blockName)
+{
+	return blockName.compare("block") != 0;
+}
+
 void PartitionTable::loadPartitionTable()
 {
 	vector<string> fileContent;
@@ -76,21 +94,25 @@ void PartitionTable::loadPartitionTable()
 
 		if(splitLine.size() == 4)
 		{
-			int deviceMajor = atoi(splitLine[0].c_str());
-			int deviceMinor = atoi(splitLine[1].c_str());
-			string deviceName = splitLine[3];
-			string parentDisk;
+			m_allValidBlocks.push_back(splitLine[3]);
+		}
+	}
 
-			parentDiskOfBlockDevice(deviceName, &parentDisk);
+	for(size_t i = 0, size = m_allValidBlocks.size(); i < size; ++i)
+	{
+		string parentDisk;
 
-			if(deviceMinor == 0) //got a disk
+		parentDiskOfBlockDevice(m_allValidBlocks[i], &parentDisk);
+
+		if(isBlockValid(parentDisk))
+		{
+			insertPartition(parentDisk, m_allValidBlocks[i]);
+		}
+		else
+		{
+			if(isRealDisk(parentDisk))
 			{
-				insertDisk(deviceName);
-			}
-			else
-			if(deviceMinor > 0) //got a partition
-			{
-				insertPartition(deviceName, deviceName);
+				insertDisk(m_allValidBlocks[i]);
 			}
 		}
 	}
@@ -171,11 +193,11 @@ ostream & operator<<(ostream &os, PartitionTable &partitionTable)
 
 	while(disksIterator != table->end())
 	{
-		os << "--" << disksIterator->first << "\n";
+		os << "-" << disksIterator->first << "\n";
 
 		for(size_t i = 0, len = disksIterator->second.size(); i < len; ++i)
 		{
-			os << "    |--" << disksIterator->second[i] << "\n";
+			os << "    |_" << disksIterator->second[i] << "\n";
 		}
 
 		disksIterator++;

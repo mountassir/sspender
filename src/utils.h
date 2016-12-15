@@ -40,6 +40,8 @@ struct DiskCfg
 {
 	string diskName;
 	string diskUUID;
+	int idle_load_threshold;
+	int idle_time_threshold;
 	bool suspendIfIdle;
 	bool spinDown;
 

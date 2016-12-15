@@ -39,6 +39,7 @@ class PartitionTable
 {
 private:
 	PartitionsTable m_partitionTable;
+	vector<string> m_allValidBlocks;
 
 	bool insertDisk(const string &diskName);
 	bool insertPartition(const string &diskName, const string &partitionName);
@@ -47,6 +48,8 @@ public:
 	void loadPartitionTable();
 	bool isPartitionValid(const string &partitionName, string *diskName = NULL);
 	bool isDiskValid(const string &diskName);
+	bool isBlockValid(const string &blockName);
+	bool isRealDisk(const string &blockName);
 	void getAllDisks(vector<string> *disks);
 	void getAllPartitions(vector<string> *partitions);
 	const PartitionsTable* getPartitionsTable() {return &m_partitionTable;};

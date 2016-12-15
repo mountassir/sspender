@@ -115,7 +115,7 @@ namespace
 			if(partitionTable.isPartitionValid(disk.diskName, &parentDisk))
 			{
 				cout << "'" << disk.diskName << "' is a partition, "
-					 << "will monitor the parent disk '" << parentDisk << "'.\n";
+					 << "will monitor the parent disk '" << parentDisk << "' instead.\n";
 
 				//if it is, we will monitor it's parent disk instead
 				disk.diskName = parentDisk;
@@ -233,8 +233,10 @@ void ConfigParser::parseDisks(const Setting& diskScope, vector<DiskCfg> *diskCon
 	{
 		DiskCfg disk;
 
-		loockupFieldInCfgFile(diskScope[i], string("no_suspend_if_not_idle"), disk.suspendIfIdle, &NO_SUSPEND_IF_NOT_IDLE);
-		loockupFieldInCfgFile(diskScope[i], string("spind_down_if_idle"), disk.spinDown, &SPIN_DOWN_DISK_IF_IDLE);
+		loockupFieldInCfgFile(diskScope[i], string("no_suspend_if_not_idle"), disk.suspendIfIdle,       &NO_SUSPEND_IF_NOT_IDLE);
+		loockupFieldInCfgFile(diskScope[i], string("spind_down_if_idle"),     disk.spinDown,            &SPIN_DOWN_DISK_IF_IDLE);
+		loockupFieldInCfgFile(diskScope[i], string("idle_load_threshold"),    disk.idle_load_threshold, &IDLE_LOAD_THRESHOLD);
+		loockupFieldInCfgFile(diskScope[i], string("idle_time_threshold"),    disk.idle_time_threshold, &IDLE_TIME_THRESHOLD);
 
 		string diskUuid, diskName;
 		bool gotValidUuid = false;
@@ -332,9 +334,9 @@ bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
 
 template <typename T>
 bool ConfigParser::loockupFieldInCfgFile(const Setting& scope,
-									     const string &fieldName,
-									     T &output,
-									     const T *defaultValue /* = null*/)
+									          const string &fieldName,
+									          T &output,
+									          const T *defaultValue /* = null*/)
 {
 	if(scope.exists(fieldName))
 	{
