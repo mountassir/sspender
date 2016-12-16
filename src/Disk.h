@@ -45,9 +45,11 @@ private:
 public:
 	Disk(const string &diskName,
 		 const string &diskUuid,
+		 int idleTimeThreshold,
+		 int idleLoadThreshold,
 		 bool spinDown,
 		 bool suspendIfIdle) :
-			 Device(diskName, suspendIfIdle),
+			 Device(diskName, idleTimeThreshold, idleLoadThreshold, suspendIfIdle),
 				 m_uuid(diskUuid),
 				 m_sectorSize(0),
 				 m_isSpinning(true),

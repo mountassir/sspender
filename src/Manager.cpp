@@ -40,11 +40,9 @@ void Manager::setDisksToMonitor(const vector<DiskCfg> &disksToMonitor)
 	}
 }
 
-void Manager::setCpusToMonitor()
+void Manager::setCpusToMonitor(const CpuCfg &couConfig)
 {
-	string cpu = "cpu";
-
-	m_cpusToMonitor.push_back(cpu);
+	m_cpusToMonitor.push_back(couConfig);
 }
 
 void Manager::setTimesToWakeAt(const vector<string> &wakeAt)

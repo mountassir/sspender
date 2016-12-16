@@ -36,6 +36,14 @@ using namespace std;
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::time_point<std::chrono::system_clock> TimePoint;
 
+struct CpuCfg
+{
+	string cpuName;
+	int idle_load_threshold;
+	int idle_time_threshold;
+	bool suspendIfIdle;
+};
+
 struct DiskCfg
 {
 	string diskName;
@@ -44,11 +52,6 @@ struct DiskCfg
 	int idle_time_threshold;
 	bool suspendIfIdle;
 	bool spinDown;
-
-//	ostream& operator << (ostream &os, const DiskCfg &cfg)
-//	{
-//
-//	}
 };
 
 struct DeviceUsage

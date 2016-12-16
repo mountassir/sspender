@@ -33,13 +33,12 @@ int main(int argc, char *argv[])
 
 	vector<string> ipToWatch, wakeAt;
 	vector<DiskCfg> disksToMonitor;
+	CpuCfg couConfig;
 	SLEEP_MODE sleepMode;
 	int check_if_idle_every;
     int stop_monitoring_for;
     int reset_monitoring_after;
     int suspend_after;
-    bool suspend_if_cpu_idle;
-    bool suspend_if_storage_idle;
 
 	PartitionTable partitionTable;
 
@@ -53,11 +52,10 @@ int main(int argc, char *argv[])
 	bool configParsed = configParser.loadConfigs(filePath,
 												 partitionTable,
 			                                     &ipToWatch,
+			                                     &couConfig,
 			                                     &disksToMonitor,
 			                                     &wakeAt,
 			                                     &sleepMode,
-			                                     &suspend_if_cpu_idle,
-			                                     &suspend_if_storage_idle,
 			                                     &check_if_idle_every,
 												 &stop_monitoring_for,
 												 &reset_monitoring_after,
@@ -67,18 +65,20 @@ int main(int argc, char *argv[])
 	{
 		printHeaderMessage("Using the following validated configuration:", false);
 
-		cout << "\nSuspending if the CPU is idle: " << (suspend_if_cpu_idle ? "Yes" : "No");
-		cout << "\nSuspending if the storage idle: " << (suspend_if_storage_idle ? "Yes" : "No");
-
 		cout << "\nDon't suspend the machine if any of these IPs is online: ";
 		for(size_t i = 0, size = ipToWatch.size(); i < size; ++i)
 		{
 			cout << ipToWatch[i] << ",";
 		}
 
-		cout << "\nSuspend the machine if these drives are idle: ";
+		cout << "\nSuspend the machine if all these devices are idle: ";
 		for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
 		{
+			if(couConfig.suspendIfIdle)
+			{
+				cout << couConfig.cpuName << ",";
+			}
+
 			if(disksToMonitor[i].suspendIfIdle)
 			{
 				cout << disksToMonitor[i].diskName << ",";
@@ -104,10 +104,9 @@ int main(int argc, char *argv[])
 		     << (sleepMode == MEM ? "Suspend to RAM" : (sleepMode == DISK ? "Suspend to disk" : "Stand by"))
 		     << endl;
 
-		manager.setWhatToMonitor(suspend_if_cpu_idle, suspend_if_storage_idle);
 		manager.setIpsToWatch(ipToWatch);
 		manager.setDisksToMonitor(disksToMonitor);
-		manager.setCpusToMonitor();
+		manager.setCpusToMonitor(couConfig);
 		manager.setTimesToWakeAt(wakeAt);
 		manager.setSleepMode(sleepMode);
 		manager.setTimers(check_if_idle_every,

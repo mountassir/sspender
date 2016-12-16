@@ -137,11 +137,10 @@ namespace
 bool ConfigParser::loadConfigs(const string &filePath,
 		                 const PartitionTable &partitionTable,
                          vector<string> *ipToWatch,
+                         CpuCfg *couConfig,
                          vector<DiskCfg> *diskConfigs,
                          vector<string> *wakeAt,
                          SLEEP_MODE *sleepMode,
-                         bool *suspend_if_cpu_idle,
-                         bool *suspend_if_storage_idle,
                          int *check_if_idle_every,
 						 int *stop_monitoring_for,
 						 int *reset_monitoring_after,
@@ -170,6 +169,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		const Setting& settingScope = fileRoot["setting"];
 		const Setting& deviceScope  = settingScope["devices_to_monitor"];
 		const Setting& diskScope    = deviceScope["disks"];
+		const Setting& cpuScope     = deviceScope["cpu"];
 
 		printHeaderMessage("Reading config file = " + filePath, false);
 
@@ -180,11 +180,11 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		loockupFieldInCfgFile(tuningScope, string("reset_monitoring_after"), *reset_monitoring_after, &RESET_MONITORING_IF_BUSY_FOR);
 
 		//rootCfgFile.setting
-		loockupFieldInCfgFile(settingScope, string("suspend_if_cpu_idle"),     *suspend_if_cpu_idle,     &SUSPEND_IF_CPU_IDLE);
-		loockupFieldInCfgFile(settingScope, string("suspend_if_storage_idle"), *suspend_if_storage_idle, &SUSPEND_IF_STORAGE_IDLE);
 		loockupFieldInCfgFile(settingScope, string("ips_to_watch"), ips_to_watch);
 		loockupFieldInCfgFile(settingScope, string("wake_at"),      wake_at);
 		loockupFieldInCfgFile(settingScope, string("sleep_mode"), sleep_mode, &DEFAULT_SLEEP_MODE);
+
+		parseCpu(cpuScope, couConfig);
 
 		//rootCfgFile.setting.devices
 		loockupFieldInCfgFile(deviceScope, string("all_disks"),   monitorAllDisks);
@@ -209,9 +209,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 
 	printHeaderMessage("Loaded configuration from file = " + filePath, false);
 
-	cout << "suspend_if_cpu_idle = "              << (*suspend_if_cpu_idle ? "true" : "false")      << "\n"
-		 << "suspend_if_storage_idle = "          << (*suspend_if_storage_idle  ? "true" : "false") << "\n"
-		 << "ips_to_watch = "                     << ips_to_watch             << "\n"
+	cout << "ips_to_watch = "                     << ips_to_watch             << "\n"
 		 //<< "disks_to_monitor = "                 << disks_to_monitor         << "\n"
 		 << "wake_at = "                          << wake_at                  << "\n"
 		 << "sleep_mode = "                       << sleep_mode               << "\n"
@@ -225,6 +223,14 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	parseSleepMode(sleep_mode, sleepMode);
 
 	return true;
+}
+
+void ConfigParser::parseCpu(const Setting& cpuScope, CpuCfg *cpuConfig)
+{
+	cpuConfig->cpuName = "CPU";
+	loockupFieldInCfgFile(cpuScope, string("idle_load_threshold"),    cpuConfig->idle_load_threshold, &IDLE_LOAD_THRESHOLD);
+	loockupFieldInCfgFile(cpuScope, string("idle_time_threshold"),    cpuConfig->idle_time_threshold, &IDLE_TIME_THRESHOLD);
+	loockupFieldInCfgFile(cpuScope, string("no_suspend_if_not_idle"), cpuConfig->suspendIfIdle, &NO_SUSPEND_IF_NOT_IDLE);
 }
 
 void ConfigParser::parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs)
@@ -340,8 +346,6 @@ bool ConfigParser::loockupFieldInCfgFile(const Setting& scope,
 {
 	if(scope.exists(fieldName))
 	{
-		cout << "Found '" << fieldName << "'\n";
-
 		if(!scope.lookupValue(fieldName, output))
 		{
 			cout << "Failed to lookup '" << fieldName << "'\n";

@@ -49,7 +49,7 @@ private:
 	Monitor m_monitor;                 //machine usage monitor
 	vector<string> m_ipsToWatch;       //don't suspend if any of these ips is online
 	vector<DiskCfg> m_disksToMonitor;  //disk that will monitored
-	vector<string> m_cpusToMonitor;    //cpus that will be monitored
+	vector<CpuCfg> m_cpusToMonitor;    //cpus that will be monitored
 	vector<string> m_timesToWakeAt;    //the machine will be suspended until the earliest time in this vector
 	SLEEP_MODE m_sleepMode;            //sleep mode; to RAM, to disk or standby
 	int m_checkIfIdleEvery;            //check if the machine is idle every # minutes
@@ -80,7 +80,7 @@ public:
 	void setDisksToMonitor(const vector<DiskCfg> &disksToMonitor);
 
 	//the usage of the cpu will be monitored
-	void setCpusToMonitor();
+	void setCpusToMonitor(const CpuCfg &couConfig);
 
 	//the machine will suspend until the earliest time in passed in vector
 	//time are in the format of hh:mm

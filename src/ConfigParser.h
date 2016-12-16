@@ -43,11 +43,10 @@ public:
 	bool loadConfigs(const string &filePath,
 			         const PartitionTable &partitionTable,
 			         vector<string> *ipToWatch,
+			         CpuCfg *couConfig,
                      vector<DiskCfg> *disksToMonitor,
 			         vector<string> *wakeAt,
 			         SLEEP_MODE *sleepMode,
-			         bool *suspend_if_cpu_idle,
-					 bool *suspend_if_storage_idle,
 					 int *check_if_idle_every,
 					 int *stop_monitoring_for,
 					 int *reset_monitoring_after,
@@ -83,6 +82,8 @@ public:
 
 	//parse disk structures
 	void parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs);
+
+	void parseCpu(const Setting& cpuScope, CpuCfg *cpuConfig);
 
 	//parse sleep mode field
 	void parseSleepMode(const string &inputSleepMode, SLEEP_MODE *sleepMode);

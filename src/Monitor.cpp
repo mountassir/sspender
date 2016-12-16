@@ -75,12 +75,14 @@ Monitor::~Monitor()
 }
 
 void Monitor::monitorSystemUsage(const vector<DiskCfg> &disks,
-		                         const vector<string> &cpus)
+		                             const vector<CpuCfg> &cpus)
 {
 	for(size_t i = 0, len = disks.size(); i < len; ++i)
 	{
 		Disk *newDisk= new Disk(disks[i].diskName,
 								disks[i].diskUUID,
+								disks[i].idle_time_threshold,
+								disks[i].idle_load_threshold,
 								disks[i].spinDown,
 								disks[i].suspendIfIdle);
 
@@ -91,7 +93,7 @@ void Monitor::monitorSystemUsage(const vector<DiskCfg> &disks,
 
 	for(size_t i = 0, len = cpus.size(); i < len; ++i)
 	{
-		Cpu *newCpu= new Cpu(cpus[i]);
+		Cpu *newCpu= new Cpu(cpus[i].cpuName, cpus[i].idle_time_threshold, cpus[i].idle_load_threshold);
 
 		newCpu->monitorUsage();
 

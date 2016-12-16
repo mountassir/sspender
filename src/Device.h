@@ -44,19 +44,26 @@ private:
 	shared_ptr<WatchDog> m_watchDog;          //used to shutdown detached threads
 	string m_deviceName;                      //name of this device
 	DeviceUsage m_currentUsage, m_avrgUsage;  //current and average usage
+	int idle_time_threshold;
+	int idle_load_threshold;
 	bool m_initialized;                      //to check if the device is initialized
 	bool m_deviceIsIdle;                     //idle state of this device
 	bool m_shouldSuspendIfIdle;              //if true, the machine will only suspend if this device
 	                                         //(and any other device where this is true) is idle
 
 public:
-	Device(const string &deviceName, bool suspendIfIdle);
+	Device(const string &deviceName,
+			int idleTimeThreshold,
+			int idleLoadThreshold,
+			bool suspendIfIdle);
 	virtual ~Device();
 
 	//getters
 	void getCurrentUsage(DeviceUsage *deviceUsage);
 	void getAvrgUsage(DeviceUsage *deviceUsage);
 	bool getIdleState();
+	int  getIdleLoadThreshold();
+	int  getIdleTimeThreshold();
 
 	//returns this device's name
 	string& getDeviceName();

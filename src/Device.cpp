@@ -18,11 +18,16 @@
 
 #include "Device.h"
 
-Device::Device(const string &deviceName, bool suspendIfIdle)
+Device::Device(const string &deviceName,
+			 	 int idleTimeThreshold,
+			 	 int idleLoadThreshold,
+			 	 bool suspendIfIdle)
 {
 	m_deviceName = deviceName;
 	m_currentUsage.load = 0;
 	m_watchDog.reset(new WatchDog(true));
+	idle_time_threshold = idleTimeThreshold;
+	idle_load_threshold = idleLoadThreshold;
 	m_initialized = false;
 	m_deviceIsIdle = false;
 	m_shouldSuspendIfIdle = suspendIfIdle;
@@ -145,6 +150,16 @@ double Device::updateAverageValue(double currentAverageValue, double currentValu
 	return (currentAverageValue + currentValue) / 2;
 }
 
+int Device::getIdleLoadThreshold()
+{
+	return idle_load_threshold;
+};
+
+int Device::getIdleTimeThreshold()
+{
+	return idle_time_threshold;
+};
+
 void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> watchDog)
 {
 	//we only need to open the file once
@@ -162,7 +177,7 @@ void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> wa
 
 		deviceToMonitor->setUsage(diskUsage);
 
-		if(diskUsage.load > 10)
+		if(diskUsage.load > deviceToMonitor->getIdleLoadThreshold())
 		{
 			deviceToMonitor->setIdle(false);
 			startTime = Clock::now();
@@ -171,7 +186,7 @@ void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> wa
 		{
 			double duration = getMinutesDuration(startTime);
 
-			if(duration > 1)
+			if(duration > deviceToMonitor->getIdleTimeThreshold())
 			{
 				deviceToMonitor->setIdle(true);
 			}
