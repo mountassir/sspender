@@ -165,19 +165,19 @@ void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> wa
 	//we only need to open the file once
 	ifstream statesFile (deviceToMonitor->getStatesFileName());
 
-	auto startTime = Clock::now();
+	TimePoint startTime = Clock::now();
 
 	//while the device object is still in scope
 	//call it's functions to calculate and update the usage
 	while(watchDog->shouldStillMonitor())
 	{
-		DeviceUsage diskUsage = {0, 0, 0};
+		DeviceUsage deviceUsage = {0, 0, 0};
 
-		deviceToMonitor->calculateUsage(statesFile, &diskUsage);
+		deviceToMonitor->calculateUsage(statesFile, &deviceUsage);
 
-		deviceToMonitor->setUsage(diskUsage);
+		deviceToMonitor->setUsage(deviceUsage);
 
-		if(diskUsage.load > deviceToMonitor->getIdleLoadThreshold())
+		if(deviceUsage.load > deviceToMonitor->getIdleLoadThreshold())
 		{
 			deviceToMonitor->setIdle(false);
 			startTime = Clock::now();
@@ -186,7 +186,7 @@ void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> wa
 		{
 			double duration = getMinutesDuration(startTime);
 
-			if(duration > deviceToMonitor->getIdleTimeThreshold())
+			if(duration >= deviceToMonitor->getIdleTimeThreshold())
 			{
 				deviceToMonitor->setIdle(true);
 			}

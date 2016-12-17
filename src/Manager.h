@@ -56,22 +56,16 @@ private:
 	int m_stopMonitoringFor;           //if any of the ip addresses is online, stop monitoring for # minutes
 	int m_resetMonitoringAfter;        //if the machine was busy for # minutes, reset all monitoring counters
 	int m_suspendAfter;                //suspend the machine if it is idle for # minutes
-	bool m_suspendIfCpuIdle;           //should suspend if the cpu is idle?
-	bool m_suspendIfStorageIdle;       //should suspend if the storage (the selected drives) is idle
 
 public:
 	Manager() : m_sleepMode(DISK),
 	            m_checkIfIdleEvery(CHECK_IF_IDLE_EVERY),
 	            m_stopMonitoringFor(STOP_MONITORING_FOR),
 	            m_resetMonitoringAfter(RESET_MONITORING_IF_BUSY_FOR),
-	            m_suspendAfter(SUSPEND_AFTER),
-	            m_suspendIfCpuIdle(true), m_suspendIfStorageIdle(false) { };
+	            m_suspendAfter(SUSPEND_AFTER) { };
 
 	//start monitoring the system load
 	void monitorSystemUsage();
-
-	//set which devices will be monitored
-	void setWhatToMonitor(bool suspendIfCpuIdle, bool suspendIfStorageIdle);
 
 	//the machine will not be suspended if any of these ip address is found online
 	void setIpsToWatch(const vector<string> &ipToWatch);

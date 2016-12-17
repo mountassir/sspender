@@ -198,7 +198,7 @@ double roundValue(double value)
 
 double getMinutesDuration(const TimePoint& startTime)
 {
-	auto endTime = Clock::now();
+	TimePoint endTime = Clock::now();
 
 	return chrono::duration_cast<chrono::minutes>(endTime - startTime).count();
 }

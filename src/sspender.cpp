@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
 
 	if(configParsed)
 	{
+		cout << std::fixed << std::setprecision(2);
 		printHeaderMessage("Using the following validated configuration:", false);
 
 		cout << "\nDon't suspend the machine if any of these IPs is online: ";

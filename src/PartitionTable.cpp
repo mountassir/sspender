@@ -75,7 +75,14 @@ bool PartitionTable::isBlockValid(const string &blockName)
 
 bool PartitionTable::isRealDisk(const string &blockName)
 {
-	return blockName.compare("block") != 0;
+	//return blockName.compare("block") != 0;
+	/*
+	 * disk nvme0n1 is under nvme0
+	 * sda disk is under block
+	 * so this will not work
+	 */
+
+	return true;
 }
 
 void PartitionTable::loadPartitionTable()
@@ -197,7 +204,7 @@ ostream & operator<<(ostream &os, PartitionTable &partitionTable)
 
 		for(size_t i = 0, len = disksIterator->second.size(); i < len; ++i)
 		{
-			os << "    |_" << disksIterator->second[i] << "\n";
+			os << " |_" << disksIterator->second[i] << "\n";
 		}
 
 		disksIterator++;

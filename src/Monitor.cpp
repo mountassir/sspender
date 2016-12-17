@@ -93,7 +93,10 @@ void Monitor::monitorSystemUsage(const vector<DiskCfg> &disks,
 
 	for(size_t i = 0, len = cpus.size(); i < len; ++i)
 	{
-		Cpu *newCpu= new Cpu(cpus[i].cpuName, cpus[i].idle_time_threshold, cpus[i].idle_load_threshold);
+		Cpu *newCpu= new Cpu(cpus[i].cpuName,
+				             cpus[i].idle_time_threshold,
+							 cpus[i].idle_load_threshold,
+							 cpus[i].suspendIfIdle);
 
 		newCpu->monitorUsage();
 
@@ -155,6 +158,27 @@ bool Monitor::isTheMachineIdle()
 	}
 
 	return true;
+}
+
+bool Monitor::canBeSuspended()
+{
+	for(size_t i = 0, len = m_cpusToMonitor.size(); i < len; ++i)
+	{
+		if(m_cpusToMonitor[i]->shouldSuspendIfIdle())
+		{
+			return true;
+		}
+	}
+
+	for(size_t i = 0, len = m_disksToMonitor.size(); i < len; ++i)
+	{
+		if(m_disksToMonitor[i]->shouldSuspendIfIdle())
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 bool Monitor::areClientsConnected(const vector<string> &clients)

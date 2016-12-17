@@ -64,6 +64,8 @@ public:
 	void printTheMachineUsage();
 
 	bool isTheMachineIdle();
+
+	bool canBeSuspended();
 };
 
 #endif

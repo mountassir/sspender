@@ -35,8 +35,11 @@ class Cpu : public Device {
 private:
 
 public:
-	Cpu(const string &cpuName, int idleTimeThreshold, int idleLoadThreshold) :
-		Device(cpuName, idleTimeThreshold, idleLoadThreshold, true) { };
+	Cpu(const string &cpuName,
+		int idleTimeThreshold,
+		int idleLoadThreshold,
+		bool suspendIfIdle) :
+		Device(cpuName, idleTimeThreshold, idleLoadThreshold, suspendIfIdle) { };
 
 	//initialize this cpu
 	virtual void initDevice();

@@ -18,12 +18,6 @@
 
 #include "Manager.h"
 
-void Manager::setWhatToMonitor(bool suspendIfCpuIdle, bool suspendIfStorageIdle)
-{
-	m_suspendIfCpuIdle = suspendIfCpuIdle;
-	m_suspendIfStorageIdle = suspendIfStorageIdle;
-}
-
 void Manager::setIpsToWatch(const vector<string> &ipToWatch)
 {
 	for(size_t i = 0, size = ipToWatch.size(); i < size; ++i)
@@ -102,26 +96,28 @@ void Manager::monitorSystemUsage()
 
 		printHeaderMessage("Checking if system is idle", true);
 
+		bool isIdle = isTheMachineIdle();
+
+		double minutesTheMachineBeenBusyFor = getMinutesDuration(notIdleStartTime);
+		double minutesTheMachineBeenIdleFor = getMinutesDuration(idleStartTime);
+
+		if(isIdle)
+		{
+			cout << "System is idle (" << minutesTheMachineBeenIdleFor << " minutes).\n";
+
+			notIdleStartTime = Clock::now();
+		}
+		else
+		{
+			cout << "System is not idle (" << minutesTheMachineBeenBusyFor << " minutes).\n";
+		}
+
+		printTheMachineUsage();
+
 		if(canBeSuspended())
 		{
-			bool isIdle = isTheMachineIdle();
-
-			double minutesTheMachineBeenBusyFor = getMinutesDuration(notIdleStartTime);
-			double minutesTheMachineBeenIdleFor = getMinutesDuration(idleStartTime);
-
-			if(isIdle)
-			{
-				cout << "System is idle (" << minutesTheMachineBeenIdleFor << " minutes).\n";
-
-				notIdleStartTime = Clock::now();
-			}
-			else
-			{
-				cout << "System is not idle (" << minutesTheMachineBeenBusyFor << " minutes).\n";
-			}
-
 			//if system is busy for # minutes
-			if(minutesTheMachineBeenBusyFor > m_resetMonitoringAfter)
+			if(minutesTheMachineBeenBusyFor >= m_resetMonitoringAfter)
 			{
 				cout << "System was busy for more than " << m_resetMonitoringAfter
 					 << " mins, reseting idle timer.\n";
@@ -131,7 +127,7 @@ void Manager::monitorSystemUsage()
 			}
 
 			//if idle for # minutes
-			if(minutesTheMachineBeenIdleFor > m_suspendAfter)
+			if(minutesTheMachineBeenIdleFor >= m_suspendAfter)
 			{
 				cout << "system was idle for more than "
 					 << m_suspendAfter
@@ -145,14 +141,10 @@ void Manager::monitorSystemUsage()
 				notIdleStartTime = Clock::now();
 			}
 		}
-		else
-		{
-			printTheMachineUsage();
-		}
 
 		//check if the machine is idle every # minutes
-		//std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
-		std::this_thread::sleep_for(std::chrono::seconds(5));
+		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
+		//std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 }
 
@@ -179,7 +171,7 @@ void Manager::printTheMachineUsage()
 
 bool Manager::canBeSuspended()
 {
-	return m_suspendIfCpuIdle || m_suspendIfStorageIdle;
+	return m_monitor.canBeSuspended();
 }
 
 bool Manager::isTheMachineIdle()
@@ -229,7 +221,8 @@ void Manager::suspendTheMachine()
 	}
 	else
 	{
-		//todo suspend for ever
+		//suspend for 24 hours
+		suspendUntil(currentTimeInMinutes, currentTimeInMinutes);
 	}
 }
 
