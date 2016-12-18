@@ -189,7 +189,7 @@ bool Monitor::areClientsConnected(const vector<string> &clients)
 	{
 		if(isIpAddressOnline(clients[i]))
 		{
-			cout << "IP " << clients[i] << " is online." << endl;
+			cout << "IP " << clients[i] << " is online." << "\n";
 
 			isAnyClientOnline = true;
 		}
@@ -209,12 +209,12 @@ bool Monitor::isIpAddressOnline(const string &ipAddress)
 
 		if (found != string::npos)
 		{
-			cout << ipAddress << " is online." << endl;
+			cout << ipAddress << " is online." << "\n";
 			return true;
 		}
 	}
 
-	cout << ipAddress << " is not online." << endl;
+	cout << ipAddress << " is not online." << "\n";
 
 	return false;
 }

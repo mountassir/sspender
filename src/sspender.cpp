@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 
 		cout << "\nSleep mode is: "
 		     << (sleepMode == MEM ? "Suspend to RAM" : (sleepMode == DISK ? "Suspend to disk" : "Stand by"))
-		     << endl;
+		     << "\n";
 
 		manager.setIpsToWatch(ipToWatch);
 		manager.setDisksToMonitor(disksToMonitor);
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		cout << "Failed to parse the cfg file, quitting." << endl;
+		cout << "Failed to parse the cfg file, quitting." << "\n";
 	}
 
 	return(EXIT_SUCCESS);

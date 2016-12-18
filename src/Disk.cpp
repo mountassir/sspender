@@ -142,10 +142,10 @@ void Disk::spinDown()
 {
 	if(isDiskSpinning())
 	{
-		cout << "Spinning " << getDeviceName() << " down." << endl;
+		cout << "Spinning " << getDeviceName() << " down." << "\n";
 		ostringstream oss;
 		oss << "hdparm -y /dev/" + getDeviceName();
-		cout << oss.str() << endl;
+		cout << oss.str() << "\n";
 
 		vector<string> output;
 

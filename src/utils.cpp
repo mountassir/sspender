@@ -86,7 +86,7 @@ bool convertTimeToMinutes(string time, double *totalMinutes)
 
 	if(splitTime.size() < 1)
 	{
-		cout << "Failed to convert time to minutes: " << time << endl;
+		cout << "Failed to convert time to minutes: " << time << "\n";
 		return false;
 	}
 
@@ -108,11 +108,11 @@ void printHeaderMessage(const string &message, bool logTime)
 {
 	if(logTime)
 	{
-		cout << "=====|| " << message << " | " << getCurrentDateTime() << endl;
+		cout << "=====|| " << message << " | " << getCurrentDateTime() << "\n";
 	}
 	else
 	{
-		cout << "\n==========|| " << message << endl;
+		cout << "\n==========|| " << message << "\n";
 	}
 }
 
@@ -247,7 +247,7 @@ void parseFile(const string &fileName, vector<string>* fileOutput)
 	}
 	else
 	{
-		cout << "Could not open " << fileName << endl;
+		cout << "Could not open " << fileName << "\n";
 	}
 }
 
@@ -267,7 +267,7 @@ void parseFile(ifstream &file, vector<string>* fileOutput)
 	}
 	else
 	{
-		cout << "ifstream is not open!!" << endl;
+		cout << "ifstream is not open!!" << "\n";
 	}
 }
 

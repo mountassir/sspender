@@ -81,7 +81,7 @@ void Manager::monitorSystemUsage()
 		{
 			cout << "Found clients online, will stop monitoring for "
 				 << m_stopMonitoringFor
-				 << " mins." << endl;
+				 << " mins." << "\n";
 
 			//if any of the specified IPs is online, reset the counters and
 			//stop checking if the machine is idle, note that the usage of

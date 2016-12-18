@@ -56,7 +56,7 @@ namespace
 
 		if(!ipIsValid)
 		{
-			cout << "Invalid IP address: " << ipAddress << endl;
+			cout << "Invalid IP address: " << ipAddress << "\n";
 		}
 
 		return ipIsValid;
@@ -95,7 +95,7 @@ namespace
 
 		if(!timeIsValid)
 		{
-			cout << "Invalid time: " << time << endl;
+			cout << "Invalid time: " << time << "\n";
 		}
 
 		return timeIsValid;
@@ -202,7 +202,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	}
 	catch(const ConfigException &configExep)
 	{
-		cout << configExep.what() << endl;
+		cout << configExep.what() << "\n";
 
 		return false;
 	}
@@ -323,14 +323,14 @@ bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
 	}
 	catch(const FileIOException &fioex)
 	{
-		std::cerr << "I/O error while reading file: " << filePath << std::endl;
+		std::cerr << "I/O error while reading file: " << filePath << "\n";
 
 		return false;
 	}
 	catch(const ParseException &pex)
 	{
 		std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-		<< " - " << pex.getError() << std::endl;
+		<< " - " << pex.getError() << "\n";
 
 		return false;
 	}
@@ -447,7 +447,7 @@ void ConfigParser::parseSleepMode(const string &inputSleepMode, SLEEP_MODE *slee
 	}
 	else
 	{
-		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or stand_by), " << " using disk as default." << endl;
+		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or stand_by), " << " using disk as default." << "\n";
 		*sleepMode = DISK;
 	}
 }
