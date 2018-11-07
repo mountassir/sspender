@@ -76,13 +76,9 @@ void Disk::setIdle(bool state)
 {
 	setIdleState(state);
 
-	if(state)
+	if(state && shouldSpinDownIfIdle())
 	{
 		spinDown();
-	}
-	else
-	{
-		setSpinningState(true);
 	}
 }
 
@@ -140,29 +136,14 @@ int Disk::getDiskSectorSize(const string &diskName)
 
 void Disk::spinDown()
 {
-	if(isDiskSpinning())
-	{
-		cout << "Spinning " << getDeviceName() << " down." << "\n";
-		ostringstream oss;
-		oss << "hdparm -y /dev/" + getDeviceName();
-		cout << oss.str() << "\n";
+	cout << "Spinning " << getDeviceName() << " down." << "\n";
+	ostringstream oss;
+	oss << "hdparm -y /dev/" + getDeviceName();
+	cout << oss.str() << "\n";
 
-		vector<string> output;
+	vector<string> output;
 
-		runSystemCommand(oss.str(), &output);
-
-		setSpinningState(false);
-	}
-}
-
-bool Disk::isDiskSpinning()
-{
-	return m_isSpinning;
-}
-
-void Disk::setSpinningState(bool spinningState)
-{
-	m_isSpinning = spinningState;
+	runSystemCommand(oss.str(), &output);
 }
 
 bool Disk::shouldSpinDownIfIdle()

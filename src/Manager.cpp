@@ -73,6 +73,10 @@ void Manager::monitorSystemUsage()
 
 	while(true)
 	{
+		//check if the machine is idle every # minutes
+		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
+		//std::this_thread::sleep_for(std::chrono::seconds(5));
+		
 		printHeaderMessage("Checking if clients are online", true);
 
 		bool stayOnline = m_monitor.areClientsConnected(m_ipsToWatch);
@@ -141,10 +145,6 @@ void Manager::monitorSystemUsage()
 				notIdleStartTime = Clock::now();
 			}
 		}
-
-		//check if the machine is idle every # minutes
-		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
-		//std::this_thread::sleep_for(std::chrono::seconds(5));
 	}
 }
 

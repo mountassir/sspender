@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
 	vector<string> ipToWatch, wakeAt;
 	vector<DiskCfg> disksToMonitor;
-	CpuCfg couConfig;
+	CpuCfg cpuConfig;
 	SLEEP_MODE sleepMode;
 	int check_if_idle_every;
     int stop_monitoring_for;
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 	bool configParsed = configParser.loadConfigs(filePath,
 												 partitionTable,
 			                                     &ipToWatch,
-			                                     &couConfig,
+			                                     &cpuConfig,
 			                                     &disksToMonitor,
 			                                     &wakeAt,
 			                                     &sleepMode,
@@ -73,13 +73,13 @@ int main(int argc, char *argv[])
 		}
 
 		cout << "\nSuspend the machine if all these devices are idle: ";
+		if(cpuConfig.suspendIfIdle)
+		{
+			cout << cpuConfig.cpuName << ",";
+		}
+			
 		for(size_t i = 0, size = disksToMonitor.size(); i < size; ++i)
 		{
-			if(couConfig.suspendIfIdle)
-			{
-				cout << couConfig.cpuName << ",";
-			}
-
 			if(disksToMonitor[i].suspendIfIdle)
 			{
 				cout << disksToMonitor[i].diskName << ",";
@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
 		manager.setIpsToWatch(ipToWatch);
 		manager.setDisksToMonitor(disksToMonitor);
-		manager.setCpusToMonitor(couConfig);
+		manager.setCpusToMonitor(cpuConfig);
 		manager.setTimesToWakeAt(wakeAt);
 		manager.setSleepMode(sleepMode);
 		manager.setTimers(check_if_idle_every,

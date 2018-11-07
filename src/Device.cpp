@@ -168,7 +168,7 @@ void Device::monitorDeviceUsage(Device *deviceToMonitor, shared_ptr<WatchDog> wa
 	TimePoint startTime = Clock::now();
 
 	//while the device object is still in scope
-	//call it's functions to calculate and update the usage
+	//call its functions to calculate and update the usage
 	while(watchDog->shouldStillMonitor())
 	{
 		DeviceUsage deviceUsage = {0, 0, 0};
