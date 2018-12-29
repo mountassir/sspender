@@ -1,5 +1,3 @@
-#You need to install libconfig++-dev
-
 CMAKE_MINIMUM_REQUIRED ( VERSION 3.0 )
 
 CMAKE_POLICY ( VERSION 3.0 )
