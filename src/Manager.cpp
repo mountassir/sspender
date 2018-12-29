@@ -268,7 +268,7 @@ void Manager::rtcWakeSuspend(double secondsToSleep, vector<string> *output)
 	string sleepMode = getRtcWakeSleepMode();
 
 	ostringstream oss;
-	oss << "rtcwake -m " << sleepMode << " -s " << secondsToSleep;
+	oss << "/usr/sbin/rtcwake -m " << sleepMode << " -s " << secondsToSleep;
 
 	runSystemCommand(oss.str(), output);
 }
@@ -309,9 +309,9 @@ string Manager::getPmUtilCommand()
 {
 	switch(m_sleepMode)
 	{
-		case STAND_BY: { return string("pm-suspend");}
-		case MEM:      { return string("pm-suspend");}
-		case DISK:     { return string("pm-hibernate");}
-		default:       { return string("pm-hibernate");}
+		case STAND_BY: { return string("/usr/sbin/pm-suspend");}
+		case MEM:      { return string("/usr/sbin/pm-suspend");}
+		case DISK:     { return string("/usr/sbin/pm-hibernate");}
+		default:       { return string("/usr/sbin/pm-hibernate");}
 	}
 }
