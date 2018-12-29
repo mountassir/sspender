@@ -62,10 +62,17 @@ $ sudo make install
 ```
 
 # Usage:
-Download the executable from the latest release or compile your own from the source code in the folder "src", update the config file sspender.cfg and run the executable:
+Download the executable from the latest release or compile your own from the source code in the folder "src", update the config file sspender.cfg and run the executable.
+
+As sspender relies on hdparm and rtcwake to spin down the drives and suspend the machine, sspender needs to be executed as root. You can run it as a normal user and it will still monitor all the devices, but it won't be able to spin down the drives or suspend the machine.
 
 ``` bash
-$ sspender sspender.cfg
+$ sudo sspender sspender.cfg
+```
+
+To direct logs to /var/log/sspender.log
+``` bash
+$ sudo sspender sspender.cfg > /var/log/sspender.log 2>&1 &
 ```
 
 # Limitations:
