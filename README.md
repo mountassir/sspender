@@ -1,7 +1,7 @@
 # What is sspender?
-A couple of years ago, I buit a NAS / media / backup server to play which I did not to be ON all the time as it did not do anything that required a 24/7 up time.
+A couple of years ago, I buit a NAS / media / backup server to play with, which I didn't want to be ON all the time as it didn't do anything that required a 24/7 up time.
 
-Simply suspending the server at pre-defined times, was not an option for me simply because my usage of the server varied and I had other machines depending on it.
+Simply suspending the server at pre-defined times was not an option for me, simply because my usage of the server varied and I had other machines depending on it.
 
 To be more specific, I wanted to server to suspend, but only if:
 - Certain machines were not online, because they needed the server to be ON.
@@ -15,13 +15,13 @@ I also wanted:
 - Run some tasks when the server recovers from suspend (not yet implemented).
 - Monitor network interfaces usage (not yet implemented).
 
-I searched around for a solution but could not find a program to fulfill all of my requirements, so I decided to write my own. 
+I searched around for a solution but could not find a program that fulfilled all of my requirements, so I decided to write my own. 
 
 I have been using sspender for a while now, deployed on few machines I got and it has served me very well. I am sharing this and the source code in case some else has similar requirements and needs.
 
 
 # Running environment: 
-This has been developed and used in a machine running Ubuntu, I have not tested it in any other systems.
+This has been developed and used under Ubuntu, I have not tested it in any other systems.
 
 
 # Dependencies:
@@ -44,7 +44,7 @@ $ apt install pm-utils
 ```
 
 ### hdparm
-hdparm is required to spinf down the drives, only required if you have spindown option enabled in sspender.cfg.
+hdparm is required to spin down the drives, only required if you have spindown option enabled in sspender.cfg.
 ``` bash
 $ apt install hdparm
 ```
