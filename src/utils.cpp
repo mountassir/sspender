@@ -170,27 +170,6 @@ bool runSystemCommand(const string &command, vector<string> *output /* = null*/)
 	return true;
 }
 
-double getDoubleFromSystemCall(const string &command)
-{
-	FILE *in;
-	char buff[512];
-
-	if(!(in = popen(command.c_str(), "r")))
-	{
-		return -1;
-	}
-
-	double value;
-
-	while(fgets(buff, sizeof(buff), in) != NULL)
-	{
-		value = atof(string(buff).c_str());
-	}
-
-	pclose(in);
-	return value;
-}
-
 double roundValue(double value)
 {
 	return floor( value * 100.00 + 0.5 ) / 100.00;
