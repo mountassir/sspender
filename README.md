@@ -3,10 +3,10 @@ A couple of years ago, I buit a NAS / media / backup server to play with, which 
 
 Simply suspending the server at pre-defined times was not an option for me, simply because my usage of the server varied and I had other machines depending on it.
 
-To be more specific, I wanted to server to suspend, but only if:
+To be more specific, I wanted the server to suspend, but only if:
 - Certain machines were not online, because they needed the server to be ON.
-- Certain drives are idle, otherwise scheduled backups and tasks would have been interepted.
-- CPU is idle otherwise scheduled tasks would have been interepted.
+- Certain drives are idle, otherwise scheduled backups and tasks would have been interrupted.
+- CPU is idle otherwise scheduled tasks would have been interrupted.
 
 I also wanted:
 - To be able to define what usage is considered "idle" for both CPU and disks.
