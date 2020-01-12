@@ -200,11 +200,11 @@ ostream & operator<<(ostream &os, PartitionTable &partitionTable)
 
 	while(disksIterator != table->end())
 	{
-		os << "-" << disksIterator->first << "\n";
+		os << "-" << disksIterator->first << endl;
 
 		for(size_t i = 0, len = disksIterator->second.size(); i < len; ++i)
 		{
-			os << " |_" << disksIterator->second[i] << "\n";
+			os << " |_" << disksIterator->second[i] << endl;
 		}
 
 		disksIterator++;

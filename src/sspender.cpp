@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
 	partitionTable.loadPartitionTable();
 
-	cout << "PartitionTable loaded:\n" << partitionTable << "\n";
+	cout << "PartitionTable loaded:\n" << partitionTable << endl;
 
 	ConfigParser configParser(partitionTable);
 	Manager manager;
@@ -103,7 +103,7 @@ int main(int argc, char *argv[])
 
 		cout << "\nSleep mode is: "
 		     << (sleepMode == MEM ? "Suspend to RAM" : (sleepMode == DISK ? "Suspend to disk" : "Stand by"))
-		     << "\n";
+		     << endl;
 
 		manager.setIpsToWatch(ipToWatch);
 		manager.setDisksToMonitor(disksToMonitor);
@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		cout << "Failed to parse the cfg file, quitting." << "\n";
+		cout << "Failed to parse the cfg file, quitting." << endl;
 	}
 
 	return(EXIT_SUCCESS);

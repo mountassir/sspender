@@ -41,7 +41,7 @@ bool uuidToDiskName(const string &uuid, string *diskName)
 		}
 		else
 		{
-			cout << firstLine << "\n";
+			cout << firstLine << endl;
 		}
 	}
 
@@ -70,7 +70,7 @@ bool parentDiskOfBlockDevice(const string &blockDevice, string *diskName)
 		}
 		else
 		{
-			cout << "Could not read link " << command << "\n";
+			cout << "Could not read link " << command << endl;
 		}
 	}
 
@@ -86,7 +86,7 @@ bool convertTimeToMinutes(string time, double *totalMinutes)
 
 	if(splitTime.size() < 1)
 	{
-		cout << "Failed to convert time to minutes: " << time << "\n";
+		cout << "Failed to convert time to minutes: " << time << endl;
 		return false;
 	}
 
@@ -108,11 +108,11 @@ void printHeaderMessage(const string &message, bool logTime)
 {
 	if(logTime)
 	{
-		cout << "=====|| " << message << " | " << getCurrentDateTime() << "\n";
+		cout << "=====|| " << message << " | " << getCurrentDateTime() << endl;
 	}
 	else
 	{
-		cout << "\n==========|| " << message << "\n";
+		cout << "\n==========|| " << message << endl;
 	}
 }
 
@@ -226,7 +226,7 @@ void parseFile(const string &fileName, vector<string>* fileOutput)
 	}
 	else
 	{
-		cout << "Could not open " << fileName << "\n";
+		cout << "Could not open " << fileName << endl;
 	}
 }
 
@@ -246,7 +246,7 @@ void parseFile(ifstream &file, vector<string>* fileOutput)
 	}
 	else
 	{
-		cout << "ifstream is not open!!" << "\n";
+		cout << "ifstream is not open!!" << endl;
 	}
 }
 
