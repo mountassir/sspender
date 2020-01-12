@@ -85,7 +85,7 @@ void Manager::monitorSystemUsage()
 		{
 			cout << "Found clients online, will stop monitoring for "
 				 << m_stopMonitoringFor
-				 << " mins." << "\n";
+				 << " mins." << endl;
 
 			//if any of the specified IPs is online, reset the counters and
 			//stop checking if the machine is idle, note that the usage of
@@ -160,11 +160,11 @@ void Manager::printTheMachineUsage()
 //
 //	getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
 //
-//	cout << "Average CPU usage: Load - " << cpuLoad << "%." << "\n";
+//	cout << "Average CPU usage: Load - " << cpuLoad << "%." << endl;
 //
 //	cout << "Average Storage usage (across all monitored drives): Load - "
 //	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
-//	     << storageWritten << "KB/s.\n";
+//	     << storageWritten << "KB/s." << endl;
 
 	m_monitor.printTheMachineUsage();
 }
@@ -242,8 +242,8 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 		secondsToSleep = (until + (TOTAL_MINUTES_IN_DAY - currentTimeInMinutes) - SUSPEND_OFFSET) * SECONDS_IN_MINUTE;
 	}
 
-	cout << "Got: current time in minutes (" << currentTimeInMinutes << "), suspend until(" << until << ").\n";
-	cout << "Suspending the machine for " << secondsToSleep << " seconds.\n";
+	cout << "Got: current time in minutes (" << currentTimeInMinutes << "), suspend until(" << until << ").\n"
+	     << "Suspending the machine for " << secondsToSleep << " seconds." << endl;
 
 	vector<string> output;
 
@@ -260,7 +260,7 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 		cout << output[i] << " , ";
 	}
 
-	cout << "\n";
+	cout << endl;
 }
 
 void Manager::rtcWakeSuspend(double secondsToSleep, vector<string> *output)

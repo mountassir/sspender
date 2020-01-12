@@ -56,7 +56,7 @@ namespace
 
 		if(!ipIsValid)
 		{
-			cout << "Invalid IP address: " << ipAddress << "\n";
+			cout << "Invalid IP address: " << ipAddress << endl;
 		}
 
 		return ipIsValid;
@@ -95,7 +95,7 @@ namespace
 
 		if(!timeIsValid)
 		{
-			cout << "Invalid time: " << time << "\n";
+			cout << "Invalid time: " << time << endl;
 		}
 
 		return timeIsValid;
@@ -202,7 +202,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	}
 	catch(const ConfigException &configExep)
 	{
-		cout << configExep.what() << "\n";
+		cout << configExep.what() << endl;
 
 		return false;
 	}
@@ -216,7 +216,7 @@ bool ConfigParser::loadConfigs(const string &filePath,
 		 << "check_if_idle_every (minutes) = "    << *check_if_idle_every     << "\n"
 		 << "stop_monitoring_for (minutes) = "    << *stop_monitoring_for     << "\n"
 		 << "reset_monitoring_after (minutes) = " << *reset_monitoring_after  << "\n"
-		 << "suspend_after (minutes) = "          << *suspend_after           << "\n";
+		 << "suspend_after (minutes) = "          << *suspend_after           << endl;
 
 	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
 	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
@@ -312,7 +312,7 @@ void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> *diskConfigs)
 		diskConfigs->push_back(diskCfg);
 	}
 
-	cout << "\n";
+	cout << endl;
 }
 
 bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
@@ -323,14 +323,14 @@ bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
 	}
 	catch(const FileIOException &fioex)
 	{
-		std::cerr << "I/O error while reading file: " << filePath << "\n";
+		std::cerr << "I/O error while reading file: " << filePath << endl;
 
 		return false;
 	}
 	catch(const ParseException &pex)
 	{
 		std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-		<< " - " << pex.getError() << "\n";
+		<< " - " << pex.getError() << endl;
 
 		return false;
 	}
@@ -447,7 +447,7 @@ void ConfigParser::parseSleepMode(const string &inputSleepMode, SLEEP_MODE *slee
 	}
 	else
 	{
-		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or stand_by), " << " using disk as default." << "\n";
+		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or stand_by), " << " using disk as default." << endl;
 		*sleepMode = DISK;
 	}
 }

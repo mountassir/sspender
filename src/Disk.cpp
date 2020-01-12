@@ -136,10 +136,10 @@ int Disk::getDiskSectorSize(const string &diskName)
 
 void Disk::spinDown()
 {
-	cout << "Spinning " << getDeviceName() << " down." << "\n";
+	cout << "Spinning " << getDeviceName() << " down." << endl;
 	ostringstream oss;
 	oss << "/sbin/hdparm -y /dev/" + getDeviceName();
-	cout << oss.str() << "\n";
+	cout << oss.str() << endl;
 
 	vector<string> output;
 
