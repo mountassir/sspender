@@ -1,23 +1,18 @@
 # What is sspender?
-A couple of years ago, I buit a NAS / media / backup server to play with, which I didn't want to be ON all the time as it didn't do anything that required a 24/7 up time.
+sspender allows you to suspend your server when it is not being used, it also allows you to spin down any disks that are not active.
 
-Simply suspending the server at pre-defined times was not an option for me, simply because my usage of the server varied and I had other machines depending on it.
+It supports the following conditions before suspending the server:
+- User defined usage of the CPU.
+- User defined usage of some, or all disks (useful to avoid interrupting scheduled backups and other tasks).
+- Whether another server is online (useful if another machine requires your server to stay ON).
 
-To be more specific, I wanted the server to suspend, but only if:
-- Certain machines were not online, because they needed the server to be ON.
-- Certain drives are idle, otherwise scheduled backups and tasks would have been interrupted.
-- CPU is idle otherwise scheduled tasks would have been interrupted.
-
-I also wanted:
-- To be able to define what usage is considered "idle" for both CPU and disks.
-- The server to resume from suspend at certain times during the day, because the server is required to be ON at those times.
-- Certain drives to spin down if they are idle.
+I also allows you to:
+- Decide how the server should be suspended, standby (ACPI S1), to memory (ACPI S3) or to disk (ACPI S4).
+- Define what usage is considered "idle" for both CPU and disks.
+- Define a time when the server should weake up after it has been suspended (useful if you require your server to be ON at ceartain times).
+- Define what drives you want to spin down if they are idle.
 - Run some tasks when the server recovers from suspend (not yet implemented).
 - Monitor network interfaces usage (not yet implemented).
-
-I searched around for a solution but could not find a program that fulfilled all of my requirements, so I decided to write my own. 
-
-I have been using sspender for a while now, deployed on few machines I got and it has served me very well. I am sharing this and the source code in case some else has similar requirements and needs.
 
 
 # Running environment: 
@@ -35,12 +30,6 @@ $ apt install libconfig++-dev
 rtcwake is required to suspend the machine, this is the default way.
 ``` bash
 $ apt install rtcwake
-```
-
-### pm-utils
-pm-utils is required to suspend the machine, only required if you choose pm-utils instead of rtcwake in sspender.cfg.
-``` bash
-$ apt install pm-utils
 ```
 
 ### hdparm

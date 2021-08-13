@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 		}
 
 		cout << "\nSleep mode is: "
-		     << (sleepMode == MEM ? "Suspend to RAM" : (sleepMode == DISK ? "Suspend to disk" : "Stand by"))
+		     << (sleepMode == MEM ? "Suspend to RAM - ACPI S3" : (sleepMode == DISK ? "Suspend to disk - ACPI S4" : "Stand by - ACPI S1"))
 		     << endl;
 
 		manager.setIpsToWatch(ipToWatch);

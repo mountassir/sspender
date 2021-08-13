@@ -441,13 +441,13 @@ void ConfigParser::parseSleepMode(const string &inputSleepMode, SLEEP_MODE *slee
 		*sleepMode = DISK;
 	}
 	else
-	if(trimedInput.compare("stand_by") == 0)
+	if(trimedInput.compare("standby") == 0)
 	{
 		*sleepMode = STAND_BY;
 	}
 	else
 	{
-		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or stand_by), " << " using disk as default." << endl;
+		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or standby), " << " using disk as default." << endl;
 		*sleepMode = DISK;
 	}
 }

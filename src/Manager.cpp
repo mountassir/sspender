@@ -75,7 +75,6 @@ void Manager::monitorSystemUsage()
 	{
 		//check if the machine is idle every # minutes
 		std::this_thread::sleep_for(std::chrono::minutes(m_checkIfIdleEvery));
-		//std::this_thread::sleep_for(std::chrono::seconds(5));
 		
 		printHeaderMessage("Checking if clients are online", true);
 
@@ -107,13 +106,15 @@ void Manager::monitorSystemUsage()
 
 		if(isIdle)
 		{
-			cout << "System is idle (" << minutesTheMachineBeenIdleFor << " minutes).\n";
+			cout << "System has been idle during the last " << minutesTheMachineBeenIdleFor << " minutes.\n";
 
 			notIdleStartTime = Clock::now();
 		}
 		else
 		{
-			cout << "System is not idle (" << minutesTheMachineBeenBusyFor << " minutes).\n";
+			cout << "System has not been idle during the last " << minutesTheMachineBeenBusyFor << " minutes.\n";
+
+			idleStartTime = Clock::now();
 		}
 
 		printTheMachineUsage();
@@ -123,8 +124,8 @@ void Manager::monitorSystemUsage()
 			//if system is busy for # minutes
 			if(minutesTheMachineBeenBusyFor >= m_resetMonitoringAfter)
 			{
-				cout << "System was busy for more than " << m_resetMonitoringAfter
-					 << " mins, reseting idle timer.\n";
+				cout << "System was not idle during the last " << m_resetMonitoringAfter
+					 << " minutes, reseting idle timer.\n";
 
 				idleStartTime = Clock::now();
 				notIdleStartTime = Clock::now();
@@ -133,9 +134,9 @@ void Manager::monitorSystemUsage()
 			//if idle for # minutes
 			if(minutesTheMachineBeenIdleFor >= m_suspendAfter)
 			{
-				cout << "system was idle for more than "
+				cout << "System has been idle for more than "
 					 << m_suspendAfter
-					 << " mins, will suspend the machine.\n";
+					 << " minutes, will suspend the machine.\n";
 
 				printHeaderMessage("Suspending the machine", true);
 
@@ -156,16 +157,6 @@ void Manager::getTheMachineUsage(double *cpuLoad, double *storageLoad, double *s
 
 void Manager::printTheMachineUsage()
 {
-//	double cpuLoad, storageLoad, storageRead, storageWritten;
-//
-//	getTheMachineUsage(&cpuLoad, &storageLoad, &storageRead, &storageWritten);
-//
-//	cout << "Average CPU usage: Load - " << cpuLoad << "%." << endl;
-//
-//	cout << "Average Storage usage (across all monitored drives): Load - "
-//	     << storageLoad << "%, Read - " << storageRead << "KB/s, Written - "
-//	     << storageWritten << "KB/s." << endl;
-
 	m_monitor.printTheMachineUsage();
 }
 
@@ -248,7 +239,6 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 	vector<string> output;
 
 	rtcWakeSuspend(secondsToSleep, &output);
-	//pmUtilSuspend(secondsToSleep, &output);
 
 	//todo execute script after resume
 
