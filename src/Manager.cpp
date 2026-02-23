@@ -263,27 +263,6 @@ void Manager::rtcWakeSuspend(double secondsToSleep, vector<string> *output)
 	runSystemCommand(oss.str(), output);
 }
 
-void Manager::pmUtilSuspend(double secondsToSleep, vector<string> *output)
-{
-	ostringstream oss;
-
-	//Clear previously set wakeup time
-	oss << "sh -c \"echo 0 > /sys/class/rtc/rtc0/wakealarm\"";
-
-	runSystemCommand(oss.str());
-
-	oss.str("");
-
-	//Set the wakeup time
-	oss << "sh -c \"echo `date '+%s' -d '+ " << (secondsToSleep / 60)
-	    << " minutes'` > /sys/class/rtc/rtc0/wakealarm\"";
-
-	runSystemCommand(oss.str());
-
-	//After setting the time, PC can be turned off with this command
-	runSystemCommand(getPmUtilCommand(), output);
-}
-
 string Manager::getRtcWakeSleepMode()
 {
 	switch(m_sleepMode)
@@ -292,16 +271,5 @@ string Manager::getRtcWakeSleepMode()
 		case MEM:      { return string("mem");}
 		case DISK:     { return string("disk");}
 		default:       { return string("disk");}
-	}
-}
-
-string Manager::getPmUtilCommand()
-{
-	switch(m_sleepMode)
-	{
-		case STAND_BY: { return string("/usr/sbin/pm-suspend");}
-		case MEM:      { return string("/usr/sbin/pm-suspend");}
-		case DISK:     { return string("/usr/sbin/pm-hibernate");}
-		default:       { return string("/usr/sbin/pm-hibernate");}
 	}
 }

@@ -109,14 +109,8 @@ protected:
 	//suspend using rtcwake
 	void rtcWakeSuspend(double secondsToSleep, vector<string> *output);
 
-	//suspend using pm-util
-	void pmUtilSuspend(double secondsToSleep, vector<string> *output);
-
 	//return the sleep mode for rtcwake (based on what SLEEP_MODE was set)
 	string getRtcWakeSleepMode();
-
-	//return the sleep mode for pm-util (based on what SLEEP_MODE was set)
-	string getPmUtilCommand();
 };
 
 #endif

@@ -6,7 +6,7 @@ It supports the following conditions before suspending the server:
 - User defined usage of some, or all disks (useful to avoid interrupting scheduled backups and other tasks).
 - Whether another server is online (useful if another machine requires your server to stay ON).
 
-I also allows you to:
+It also allows you to:
 - Decide how the server should be suspended, standby (ACPI S1), to memory (ACPI S3) or to disk (ACPI S4).
 - Define what usage is considered "idle" for both CPU and disks.
 - Define a time when the server should weake up after it has been suspended (useful if you require your server to be ON at ceartain times).
@@ -63,7 +63,3 @@ To direct logs to /var/log/sspender.log
 ``` bash
 $ sudo sspender sspender.cfg > /var/log/sspender.log 2>&1 &
 ```
-
-# Limitations:
-- As explained above, this has only been used under Ubuntu so far, it might fail to work as expected under different environments, if you find any issues with your set-up please open an issue and I will have a look. 
-- I had some issues with pm-utils failing to suspend certain machines before and I have since switched to using rtcwake. The code to use pm-utils is still there and I plan on adding an option in sspender.cfg so that users can use both, in case one fails on their machines.
