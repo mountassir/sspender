@@ -20,12 +20,6 @@ This has been developed and used under Ubuntu, I have not tested it in any other
 
 
 # Dependencies:
-### libconfig++-dev
-libconfig is required during the build of sspender, as well as during execution in order to decode sspender.cfg.
-``` bash
-$ apt install libconfig++-dev
-```
-
 ### rtcwake
 rtcwake is required to suspend the machine, this is the default way.
 ``` bash
@@ -33,7 +27,7 @@ $ apt install rtcwake
 ```
 
 ### hdparm
-hdparm is required to spin down the drives, only required if you have spindown option enabled in sspender.cfg.
+hdparm is required to spin down the drives, only required if you have spindown option enabled in sspender.toml.
 ``` bash
 $ apt install hdparm
 ```
@@ -51,15 +45,15 @@ $ sudo make install
 ```
 
 # Usage:
-Download the executable from the latest release or compile your own from the source code in the folder "src", update the config file sspender.cfg and run the executable.
+Download the executable from the latest release or compile your own from the source code in the folder "src", update the config file sspender.toml and run the executable.
 
 As sspender relies on hdparm and rtcwake to spin down the drives and suspend the machine, sspender needs to be executed as root. You can run it as a normal user and it will still monitor all the devices, but it won't be able to spin down the drives or suspend the machine.
 
 ``` bash
-$ sudo sspender sspender.cfg
+$ sudo sspender sspender.toml
 ```
 
 To direct logs to /var/log/sspender.log
 ``` bash
-$ sudo sspender sspender.cfg > /var/log/sspender.log 2>&1 &
+$ sudo sspender sspender.toml > /var/log/sspender.log 2>&1 &
 ```

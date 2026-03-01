@@ -63,15 +63,8 @@ Monitor::Monitor()
 
 Monitor::~Monitor()
 {
-	if(m_disksToMonitor.size() > 0)
-	{
-		delete[] &m_disksToMonitor;
-	}
-
-	if(m_cpusToMonitor.size() > 0)
-	{
-		delete[] &m_cpusToMonitor;
-	}
+	m_disksToMonitor.clear();
+	m_cpusToMonitor.clear();
 }
 
 void Monitor::monitorSystemUsage(const vector<DiskCfg> &disks,

@@ -16,6 +16,8 @@
  * along with sspender.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+//#include <toml++/toml.hpp>
+
 #include "Manager.h"
 #include "PartitionTable.h"
 #include "ConfigParser.h"
@@ -50,7 +52,6 @@ int main(int argc, char *argv[])
 	Manager manager;
 
 	bool configParsed = configParser.loadConfigs(filePath,
-												 partitionTable,
 			                                     &ipToWatch,
 			                                     &cpuConfig,
 			                                     &disksToMonitor,

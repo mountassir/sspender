@@ -60,7 +60,7 @@ bool PartitionTable::isDiskValid(const string &diskName)
 	return false;
 }
 
-bool PartitionTable::isBlockValid(const string &blockName)
+bool PartitionTable::isBlockExists(const string &blockName)
 {
 	for(size_t i = 1, size = m_allValidBlocks.size(); i < size; ++i)
 	{
@@ -75,14 +75,13 @@ bool PartitionTable::isBlockValid(const string &blockName)
 
 bool PartitionTable::isRealDisk(const string &blockName)
 {
-	//return blockName.compare("block") != 0;
-	/*
-	 * disk nvme0n1 is under nvme0
-	 * sda disk is under block
-	 * so this will not work
-	 */
+	string command = "readlink /sys/class/block/" + blockName + "/device";
 
-	return true;
+	vector<string> output;
+
+	bool commandExecuted = runSystemCommand(command, &output);
+
+	return (commandExecuted && output.size() > 0);
 }
 
 void PartitionTable::loadPartitionTable()
@@ -111,13 +110,13 @@ void PartitionTable::loadPartitionTable()
 
 		parentDiskOfBlockDevice(m_allValidBlocks[i], &parentDisk);
 
-		if(isBlockValid(parentDisk))
+		if(isBlockExists(parentDisk))
 		{
 			insertPartition(parentDisk, m_allValidBlocks[i]);
 		}
 		else
 		{
-			if(isRealDisk(parentDisk))
+			if(isRealDisk(m_allValidBlocks[i]))
 			{
 				insertDisk(m_allValidBlocks[i]);
 			}

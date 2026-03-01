@@ -117,7 +117,7 @@ namespace
 				cout << "'" << disk.diskName << "' is a partition, "
 					 << "will monitor the parent disk '" << parentDisk << "' instead.\n";
 
-				//if it is, we will monitor it's parent disk instead
+				//if it is, we will monitor its parent disk instead
 				disk.diskName = parentDisk;
 			}
 
@@ -135,88 +135,98 @@ namespace
 }
 
 bool ConfigParser::loadConfigs(const string &filePath,
-		                 const PartitionTable &partitionTable,
-                         vector<string> *ipToWatch,
-                         CpuCfg *couConfig,
-                         vector<DiskCfg> *diskConfigs,
-                         vector<string> *wakeAt,
-                         SLEEP_MODE *sleepMode,
-                         int *check_if_idle_every,
-						 int *stop_monitoring_for,
-						 int *reset_monitoring_after,
-						 int *suspend_after)
+					vector<string> *ipToWatch,
+					CpuCfg *cpuConfig,
+					vector<DiskCfg> *disksToMonitor,
+					vector<string> *wakeAt,
+					SLEEP_MODE *sleepMode,
+					int *check_if_idle_every,
+					int *stop_monitoring_for,
+					int *reset_monitoring_after,
+					int *suspend_after)
 {
-	libconfig::Config cfg;
+	toml::table tomlTable;
+    try
+    {
+        tomlTable = toml::parse_file(filePath);
+    }
+    catch (const toml::parse_error& err)
+    {
+        std::cerr << "Parsing the config file failed:\n" << err << "\n";
+        return false;
+    }
 
-	cfg.setAutoConvert(false);
+	//[setting]
+	string ips_to_watch = tomlTable["setting"]["ips_to_watch"].value_or("");
+	string wake_at      = tomlTable["setting"]["wake_at"].value_or("");
+	string sleep_mode   = tomlTable["setting"]["sleep_mode"].value_or(DEFAULT_SLEEP_MODE);
 
-	if(!readFile(cfg, filePath))
+	//[tuning]
+	*check_if_idle_every    = tomlTable["tuning"]["check_if_idle_every"].value_or(CHECK_IF_IDLE_EVERY);
+	*stop_monitoring_for    = tomlTable["tuning"]["stop_monitoring_for"].value_or(STOP_MONITORING_FOR);
+	*reset_monitoring_after = tomlTable["tuning"]["reset_monitoring_after"].value_or(RESET_MONITORING_IF_BUSY_FOR);
+	*suspend_after          = tomlTable["tuning"]["suspend_after"].value_or(SUSPEND_AFTER);
+
+	//[devices_to_monitor.cpu]
+	cpuConfig->cpuName = "CPU";
+	cpuConfig->idle_load_threshold = tomlTable["devices_to_monitor"]["cpu"]["idle_load_threshold"].value_or(IDLE_LOAD_THRESHOLD);
+	cpuConfig->idle_time_threshold = tomlTable["devices_to_monitor"]["cpu"]["idle_time_threshold"].value_or(IDLE_TIME_THRESHOLD);
+	cpuConfig->suspendIfIdle       = tomlTable["devices_to_monitor"]["cpu"]["no_suspend_if_not_idle"].value_or(NO_SUSPEND_IF_NOT_IDLE);
+
+	bool monitorAllDisks = tomlTable["devices_to_monitor"]["all_disks"].value_or(MONITOR_ALL_DISKS);
+
+	if(monitorAllDisks)
 	{
-		return false;
+		//get all disks attached to this machine to be monitored
+		getAllDisksToMonitor(disksToMonitor);
 	}
-
-	bool monitorAllDisks = false;
-	string ips_to_watch = "";
-	string wake_at = "";
-	string sleep_mode = "";
-
-	try
+	else
 	{
-		const Setting& fileRoot = cfg.getRoot();
-
-		//different scopes/sections in the config file
-		const Setting& tuningScope  = fileRoot["tuning"];
-		const Setting& settingScope = fileRoot["setting"];
-		const Setting& deviceScope  = settingScope["devices_to_monitor"];
-		const Setting& diskScope    = deviceScope["disks"];
-		const Setting& cpuScope     = deviceScope["cpu"];
-
-		printHeaderMessage("Reading config file = " + filePath, false);
-
-		//rootCfgFile.tuning
-		loockupFieldInCfgFile(tuningScope, string("check_if_idle_every"),    *check_if_idle_every,    &CHECK_IF_IDLE_EVERY);
-		loockupFieldInCfgFile(tuningScope, string("stop_monitoring_for"),    *stop_monitoring_for,    &STOP_MONITORING_FOR);
-		loockupFieldInCfgFile(tuningScope, string("suspend_after"),          *suspend_after,          &SUSPEND_AFTER);
-		loockupFieldInCfgFile(tuningScope, string("reset_monitoring_after"), *reset_monitoring_after, &RESET_MONITORING_IF_BUSY_FOR);
-
-		//rootCfgFile.setting
-		loockupFieldInCfgFile(settingScope, string("ips_to_watch"), ips_to_watch);
-		loockupFieldInCfgFile(settingScope, string("wake_at"),      wake_at);
-		loockupFieldInCfgFile(settingScope, string("sleep_mode"), sleep_mode, &DEFAULT_SLEEP_MODE);
-
-		parseCpu(cpuScope, couConfig);
-
-		//rootCfgFile.setting.devices
-		loockupFieldInCfgFile(deviceScope, string("all_disks"),   monitorAllDisks);
-
-		if(monitorAllDisks)
+		//[devices_to_monitor.disks]
+		if (auto tableNodes = tomlTable["devices_to_monitor"]["disks"].as_array()) 
 		{
-			//get all disks attached to this machine to be monitored
-			getAllDisksToMonitor(diskConfigs);
-		}
-		else
-		{
-			//rootCfgFile.setting.devices.disks
-			parseDisks(diskScope, diskConfigs);
-		}
-	}
-	catch(const ConfigException &configExep)
-	{
-		cout << configExep.what() << endl;
+			for (auto&& node : *tableNodes) 
+			{
+				if (auto diskTable = node.as_table())
+				{
+					DiskCfg diskCfg;
 
-		return false;
+					diskCfg.suspendIfIdle = (*diskTable)["no_suspend_if_not_idle"].value_or(NO_SUSPEND_IF_NOT_IDLE);
+					diskCfg.spinDown = (*diskTable)["spind_down_if_idle"].value_or(SPIN_DOWN_DISK_IF_IDLE);
+					diskCfg.idle_load_threshold = (*diskTable)["idle_load_threshold"].value_or(IDLE_LOAD_THRESHOLD);
+					diskCfg.idle_time_threshold = (*diskTable)["idle_time_threshold"].value_or(IDLE_TIME_THRESHOLD);
+
+					string diskName = (*diskTable)["name"].value_or("");
+					string diskUUID = (*diskTable)["uuid"].value_or("");
+					bool gotValidUuid = false;
+
+					//try to use UUID first 
+					if(diskUUID != "")
+					{
+						gotValidUuid = uuidToDiskName(diskUUID, &diskCfg.diskName);
+					}
+
+					//if not, use disk name
+					if(!gotValidUuid)
+					{
+						diskCfg.diskName = diskName;
+					}
+
+					addDisk(diskCfg, disksToMonitor);
+				}
+			}
+		}
 	}
 
 	printHeaderMessage("Loaded configuration from file = " + filePath, false);
 
-	cout << "ips_to_watch = "                     << ips_to_watch             << "\n"
-		 //<< "disks_to_monitor = "                 << disks_to_monitor         << "\n"
-		 << "wake_at = "                          << wake_at                  << "\n"
-		 << "sleep_mode = "                       << sleep_mode               << "\n"
-		 << "check_if_idle_every (minutes) = "    << *check_if_idle_every     << "\n"
-		 << "stop_monitoring_for (minutes) = "    << *stop_monitoring_for     << "\n"
-		 << "reset_monitoring_after (minutes) = " << *reset_monitoring_after  << "\n"
-		 << "suspend_after (minutes) = "          << *suspend_after           << endl;
+	cout << "ips_to_watch = "                << ips_to_watch             << "\n"
+	<< "wake_at = "                          << wake_at                  << "\n"
+	<< "sleep_mode = "                       << sleep_mode               << "\n"
+	<< "check_if_idle_every (minutes) = "    << *check_if_idle_every     << "\n"
+	<< "stop_monitoring_for (minutes) = "    << *stop_monitoring_for     << "\n"
+	<< "reset_monitoring_after (minutes) = " << *reset_monitoring_after  << "\n"
+	<< "suspend_after (minutes) = "          << *suspend_after           << endl;
 
 	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
 	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
@@ -225,75 +235,39 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	return true;
 }
 
-void ConfigParser::parseCpu(const Setting& cpuScope, CpuCfg *cpuConfig)
+void ConfigParser::addDisk(DiskCfg &diskcfg, vector<DiskCfg> *diskConfigs)
 {
-	cpuConfig->cpuName = "CPU";
-	loockupFieldInCfgFile(cpuScope, string("idle_load_threshold"),    cpuConfig->idle_load_threshold, &IDLE_LOAD_THRESHOLD);
-	loockupFieldInCfgFile(cpuScope, string("idle_time_threshold"),    cpuConfig->idle_time_threshold, &IDLE_TIME_THRESHOLD);
-	loockupFieldInCfgFile(cpuScope, string("no_suspend_if_not_idle"), cpuConfig->suspendIfIdle, &NO_SUSPEND_IF_NOT_IDLE);
-}
-
-void ConfigParser::parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs)
-{
-	for(size_t i = 0, len = diskScope.getLength(); i < len; ++i)
+	//make sure we got a valid disk
+	//if we got a partition instead, validateDisk will change the diskName
+	//to it's parent disk instead (we only monitor disks not partitions)
+	if(validateDisk(diskcfg, m_partitionTable))
 	{
-		DiskCfg disk;
+		vector<DiskCfg>::const_iterator iter = diskConfigs->begin();
 
-		loockupFieldInCfgFile(diskScope[i], string("no_suspend_if_not_idle"), disk.suspendIfIdle,       &NO_SUSPEND_IF_NOT_IDLE);
-		loockupFieldInCfgFile(diskScope[i], string("spind_down_if_idle"),     disk.spinDown,            &SPIN_DOWN_DISK_IF_IDLE);
-		loockupFieldInCfgFile(diskScope[i], string("idle_load_threshold"),    disk.idle_load_threshold, &IDLE_LOAD_THRESHOLD);
-		loockupFieldInCfgFile(diskScope[i], string("idle_time_threshold"),    disk.idle_time_threshold, &IDLE_TIME_THRESHOLD);
+		bool diskAlreadyAdded = false;
 
-		string diskUuid, diskName;
-		bool gotValidUuid = false;
-
-		//try to get UUID first
-		if(loockupFieldInCfgFile(diskScope[i], string("uuid"), diskUuid))
+		while(iter != diskConfigs->end())
 		{
-			gotValidUuid = uuidToDiskName(diskUuid, &diskName);
-		}
-
-		//if not, then look for disk name
-		if(!gotValidUuid)
-		{
-			loockupFieldInCfgFile(diskScope[i], string("name"), diskName);
-		}
-
-		disk.diskUUID = diskUuid;
-		disk.diskName = diskName;
-
-		//make sure we got a valid disk
-		//if we got a partition instead, validateDisk will change the diskName
-		//to it's parent disk instead (we only monitor disks not partitions)
-		if(validateDisk(disk, m_partitionTable))
-		{
-			vector<DiskCfg>::const_iterator iter = diskConfigs->begin();
-
-			bool diskAlreadyAdded = false;
-
-			while(iter != diskConfigs->end())
+			if(iter->diskName == diskcfg.diskName)
 			{
-				if(iter->diskName == disk.diskName)
-				{
-					cout << "'" << disk.diskName << "' already being monitored, skipping.\n";
+				cout << "'" << diskcfg.diskName << "' already being monitored, skipping.\n";
 
-					diskAlreadyAdded = true;
+				diskAlreadyAdded = true;
 
-					break;
-				}
-
-				iter++;
+				break;
 			}
 
-			if(!diskAlreadyAdded)
-			{
-				diskConfigs->push_back(disk);
-			}
+			iter++;
 		}
-		else
+
+		if(!diskAlreadyAdded)
 		{
-			cout << "'" << disk.diskName << "' is not valid, skipping.\n";
+			diskConfigs->push_back(diskcfg);
 		}
+	}
+	else
+	{
+		cout << "'" << diskcfg.diskName << "' is not valid, skipping.\n";
 	}
 }
 
@@ -307,68 +281,18 @@ void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> *diskConfigs)
 	for(size_t i = 0, size = disks.size(); i < size; ++i)
 	{
 		cout << disks[i] << ", ";
-		DiskCfg diskCfg= {disks[i], "", true, false};
+		DiskCfg diskCfg = {
+			disks[i], 
+			"", 
+			IDLE_LOAD_THRESHOLD, 
+			IDLE_TIME_THRESHOLD, 
+			NO_SUSPEND_IF_NOT_IDLE, 
+			SPIN_DOWN_DISK_IF_IDLE};
 
 		diskConfigs->push_back(diskCfg);
 	}
 
 	cout << endl;
-}
-
-bool ConfigParser::readFile(libconfig::Config &cfg, const string &filePath)
-{
-	try
-	{
-		cfg.readFile(filePath.c_str());
-	}
-	catch(const FileIOException &fioex)
-	{
-		std::cerr << "I/O error while reading file: " << filePath << endl;
-
-		return false;
-	}
-	catch(const ParseException &pex)
-	{
-		std::cerr << "Parse error at " << pex.getFile() << ":" << pex.getLine()
-		<< " - " << pex.getError() << endl;
-
-		return false;
-	}
-
-	return true;
-}
-
-template <typename T>
-bool ConfigParser::loockupFieldInCfgFile(const Setting& scope,
-									          const string &fieldName,
-									          T &output,
-									          const T *defaultValue /* = null*/)
-{
-	if(scope.exists(fieldName))
-	{
-		if(!scope.lookupValue(fieldName, output))
-		{
-			cout << "Failed to lookup '" << fieldName << "'\n";
-
-			ConfigException exp;
-
-			throw(exp);
-		}
-
-		return true;
-	}
-	else //if the field does not exist, then use the defaultValue (if one is provided) instead
-	if(defaultValue)
-	{
-		cout << "Could not find '" << fieldName
-			 << "', using default value '" << *defaultValue << "'\n";
-
-		output = *defaultValue;
-
-		return true;
-	}
-
-	return false;
 }
 
 void ConfigParser::parseMultiChoiceSupportingAll(const string &input,
@@ -448,6 +372,6 @@ void ConfigParser::parseSleepMode(const string &inputSleepMode, SLEEP_MODE *slee
 	else
 	{
 		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or standby), " << " using disk as default." << endl;
-		*sleepMode = DISK;
+		*sleepMode = MEM;
 	}
 }

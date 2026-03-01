@@ -19,7 +19,7 @@
 #ifndef CONFIGPARSER_H_
 #define CONFIGPARSER_H_
 
-#include <libconfig.h++>
+#include <toml++/toml.hpp>
 #include <functional>
 #include <iostream>
 #include <vector>
@@ -29,7 +29,6 @@
 #include "PartitionTable.h"
 
 using namespace std;
-using namespace libconfig;
 
 class ConfigParser
 {
@@ -41,9 +40,8 @@ public:
 
 	//parse all the settings from the cfg file
 	bool loadConfigs(const string &filePath,
-			         const PartitionTable &partitionTable,
 			         vector<string> *ipToWatch,
-			         CpuCfg *couConfig,
+			         CpuCfg *cpuConfig,
                      vector<DiskCfg> *disksToMonitor,
 			         vector<string> *wakeAt,
 			         SLEEP_MODE *sleepMode,
@@ -51,18 +49,6 @@ public:
 					 int *stop_monitoring_for,
 					 int *reset_monitoring_after,
 					 int *suspend_after);
-
-	//read a file and load its content to a Config
-	bool readFile(libconfig::Config &cfg, const string &filePath);
-
-	//given a scope, look for a fieldName and saves it's value
-	//if the field does not exist then saves the default value
-	//instead (if provided)
-	template <typename T>
-	bool loockupFieldInCfgFile(const Setting& scope,
-					           const string &fieldName,
-					           T &output,
-					           const T *defaultValue = NULL);
 
 	//gets all the disks attached to the machine for monitoring
 	void getAllDisksToMonitor(vector<DiskCfg> *diskConfigs);
@@ -81,9 +67,7 @@ public:
 									   bool (*validator)(const string &));
 
 	//parse disk structures
-	void parseDisks(const Setting& diskScope, vector<DiskCfg> *diskConfigs);
-
-	void parseCpu(const Setting& cpuScope, CpuCfg *cpuConfig);
+	void addDisk(DiskCfg &disk, vector<DiskCfg> *diskConfigs);
 
 	//parse sleep mode field
 	void parseSleepMode(const string &inputSleepMode, SLEEP_MODE *sleepMode);

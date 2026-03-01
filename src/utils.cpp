@@ -38,6 +38,8 @@ bool uuidToDiskName(const string &uuid, string *diskName)
 		if(splitLine.size() == 3)
 		{
 			*diskName = splitLine[splitLine.size() -1 ];
+
+			return true;
 		}
 		else
 		{

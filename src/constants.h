@@ -44,6 +44,7 @@ const int IDLE_TIME_THRESHOLD = 1;          //Idle time threshold
 const int RESET_MONITORING_IF_BUSY_FOR = 3; //reset monitoring counter if found busy (x minute)
 const bool NO_SUSPEND_IF_NOT_IDLE  = true;  //server cannot be suspended if this drive is busy
 const bool SPIN_DOWN_DISK_IF_IDLE  = false; //spin down the disks when idle
-const string  DEFAULT_SLEEP_MODE   = "disk"; //Default sleep mode
+const bool MONITOR_ALL_DISKS = false;       //monitor all the attached disks and only suspend the machine if they are all idle
+const string  DEFAULT_SLEEP_MODE   = "mem"; //Default sleep mode
 
 #endif
