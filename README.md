@@ -12,7 +12,6 @@ It also allows you to:
 - Define a time when the server should weake up after it has been suspended (useful if you require your server to be ON at ceartain times).
 - Define what drives you want to spin down if they are idle.
 - Run some tasks when the server recovers from suspend (not yet implemented).
-- Monitor network interfaces usage (not yet implemented).
 
 
 # Running environment: 

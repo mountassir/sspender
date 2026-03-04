@@ -25,9 +25,9 @@ namespace
 {
 	//make sure that ipAddress is of format
 	//'int.int.int.int'
-	bool isValidIpAddress(const string &ipAddress)
+	bool isValidIpv4Address(const string &ipAddress)
 	{
-		bool ipIsValid = true;
+		bool ipv4IsValid = true;
 
 		vector<string> splitString;
 
@@ -38,7 +38,7 @@ namespace
 		//ip address is formed of 4 int separated by a '.'
 		if(size != 4)
 		{
-			ipIsValid = false;
+			ipv4IsValid = false;
 		}
 
 		for(size_t i = 0; i < size; ++i)
@@ -47,19 +47,19 @@ namespace
 
 			long converted = strtol(splitString[i].c_str(), &p, 10);
 
-			//ip address should only contain positive values
-			if(*p || converted < 0)
+			//ip address should only contain positive values between 0 and 255
+			if(*p || converted < 0 || converted > 255)
 			{
-				ipIsValid = false;
+				ipv4IsValid = false;
 			}
 		}
 
-		if(!ipIsValid)
+		if(!ipv4IsValid)
 		{
-			cout << "Invalid IP address: " << ipAddress << endl;
+			cout << "Invalid IPv4 address: " << ipAddress << endl;
 		}
 
-		return ipIsValid;
+		return ipv4IsValid;
 	}
 
 	//time is of format 'int:int'
@@ -228,7 +228,9 @@ bool ConfigParser::loadConfigs(const string &filePath,
 	<< "reset_monitoring_after (minutes) = " << *reset_monitoring_after  << "\n"
 	<< "suspend_after (minutes) = "          << *suspend_after           << endl;
 
-	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
+	printHeaderMessage("Validating configurations from file = " + filePath, false);
+
+	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpv4Address);
 	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
 	parseSleepMode(sleep_mode, sleepMode);
 
@@ -371,7 +373,7 @@ void ConfigParser::parseSleepMode(const string &inputSleepMode, SLEEP_MODE *slee
 	}
 	else
 	{
-		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or standby), " << " using disk as default." << endl;
+		cout << inputSleepMode << " is not a valid sleep mode (mem, disk or standby), " << " using mem as default." << endl;
 		*sleepMode = MEM;
 	}
 }
