@@ -33,6 +33,13 @@ int main(int argc, char *argv[])
 		filePath = argv[1];
 	}
 
+	if((filePath.compare("--version") == 0) || (filePath.compare("-v") == 0))
+	{
+		cout << "sspender version " << SSPENDER_VERSION << endl;
+
+		return(EXIT_SUCCESS);
+	}
+
 	vector<string> ipToWatch, wakeAt;
 	vector<DiskCfg> disksToMonitor;
 	CpuCfg cpuConfig;
@@ -46,6 +53,7 @@ int main(int argc, char *argv[])
 
 	partitionTable.loadPartitionTable();
 
+	cout << "sspender version " << SSPENDER_VERSION << endl;
 	cout << "PartitionTable loaded:\n" << partitionTable << endl;
 
 	ConfigParser configParser(partitionTable);

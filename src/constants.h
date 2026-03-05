@@ -21,6 +21,8 @@
 
 using namespace std;
 
+const string  SSPENDER_VERSION = "1.1";
+
 enum SLEEP_MODE {STAND_BY, MEM, DISK};
 
 const int STORAGE_READ_WRITE_LIMIT    = 400;    //#KB/s across all drives
