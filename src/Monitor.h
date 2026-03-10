@@ -21,6 +21,9 @@
 
 #include <iostream>
 #include <fstream>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 #include "constants.h"
 #include "Device.h"
@@ -52,10 +55,15 @@ public:
 	void getStorageLoad(double *storageLoad, double *storageRead, double *storageWritten);
 
 	//check if any of the clients is online
-	bool areClientsConnected(const vector<string> &clients);
+	bool areClientsConnected(const vector<ipCfg> &clients);
+
+	//check if a client is online
+	bool isClientConnected(const ipCfg &client);
 
 	//ping and check if this ip is online
 	bool isIpAddressOnline(const string &ipAddress);
+
+	bool isPortOpen(const string &ipAddress, int portNumber);
 
 	//start monitoring all the following devices
 	void monitorSystemUsage(const vector<DiskCfg> &disks,

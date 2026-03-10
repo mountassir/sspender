@@ -174,21 +174,37 @@ bool Monitor::canBeSuspended()
 	return false;
 }
 
-bool Monitor::areClientsConnected(const vector<string> &clients)
+bool Monitor::areClientsConnected(const vector<ipCfg> &clients)
 {
 	bool isAnyClientOnline = false;
 
 	for(size_t i = 0, len = clients.size(); i < len; ++i)
 	{
-		if(isIpAddressOnline(clients[i]))
+		if(isClientConnected(clients[i]))
 		{
 			cout << "IP " << clients[i] << " is online." << endl;
 
 			isAnyClientOnline = true;
 		}
+		else
+		{
+			cout << "IP " << clients[i] << " is offline." << endl;
+		}
 	}
 
 	return isAnyClientOnline;
+}
+
+bool Monitor::isClientConnected(const ipCfg &client)
+{
+	if (client.port == DEFAULT_PORT)
+	{
+		return isIpAddressOnline(client.ipAddress);
+	}
+	else
+	{
+		return isIpAddressOnline(client.ipAddress) && isPortOpen(client.ipAddress, client.port);
+	}
 }
 
 bool Monitor::isIpAddressOnline(const string &ipAddress)
@@ -202,12 +218,33 @@ bool Monitor::isIpAddressOnline(const string &ipAddress)
 
 		if (found != string::npos)
 		{
-			cout << ipAddress << " is online." << endl;
 			return true;
 		}
 	}
 
-	cout << ipAddress << " is not online." << endl;
-
 	return false;
+}
+
+bool Monitor::isPortOpen(const string &ipAddress, int portNumber) 
+{
+    int sock = socket(AF_INET, SOCK_STREAM, 0);
+    if (sock < 0) 
+	{
+		return false;
+	}
+
+    struct sockaddr_in server_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(portNumber);
+
+    if (inet_pton(AF_INET, ipAddress.c_str(), &server_addr.sin_addr) <= 0) 
+	{
+        close(sock);
+        return false;
+    }
+
+    bool open = (connect(sock, (struct sockaddr*)&server_addr, sizeof(server_addr)) == 0);
+
+    close(sock);
+    return open;
 }

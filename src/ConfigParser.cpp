@@ -62,6 +62,51 @@ namespace
 		return ipv4IsValid;
 	}
 
+	bool isPortValid(const string &port)
+	{
+		bool portIsValid = true;
+
+		char* p;
+
+		long converted = strtol(port.c_str(), &p, 10);
+
+		if(*p || converted < 0 || converted > 65535)
+		{
+			portIsValid = false;
+		}
+
+		if(!portIsValid)
+		{
+			cout << "Invalid port: " << port << endl;
+		}
+
+		return portIsValid;
+	}
+
+	//make sure that ipAddress is of format
+	//'int.int.int.int' or 'int.int.int.int:int'
+	bool isValidIpAddress(const string &ipAddress)
+	{
+		vector<string> splitString;
+
+		splitStringByDelimiter(&splitString, ipAddress, ":");
+		size_t size = splitString.size();
+
+		if(size == 1)
+		{
+			return isValidIpv4Address(ipAddress);
+		}
+		else if(size == 2)
+		{
+			return isValidIpv4Address(splitString[0]) && isPortValid(splitString[1]);
+		}
+		else
+		{
+			cout << "Invalid IP address: " << ipAddress << endl;
+			return false;
+		}
+	}
+
 	//time is of format 'int:int'
 	bool isValidTime(const string &time)
 	{
@@ -135,10 +180,10 @@ namespace
 }
 
 bool ConfigParser::loadConfigs(const string &filePath,
-					vector<string> *ipToWatch,
+					vector<ipCfg> &ipAddressesToWatch,
 					CpuCfg *cpuConfig,
-					vector<DiskCfg> *disksToMonitor,
-					vector<string> *wakeAt,
+					vector<DiskCfg> &disksToMonitor,
+					vector<string> &wakeAt,
 					SLEEP_MODE *sleepMode,
 					int *check_if_idle_every,
 					int *stop_monitoring_for,
@@ -230,25 +275,39 @@ bool ConfigParser::loadConfigs(const string &filePath,
 
 	printHeaderMessage("Validating configurations from file = " + filePath, false);
 
-	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpv4Address);
 	parseMultiChoiceArgs(wake_at, wakeAt, isValidTime);
 	parseSleepMode(sleep_mode, sleepMode);
+	vector<string> ipToWatch;
+	parseMultiChoiceArgs(ips_to_watch, ipToWatch, isValidIpAddress);
+	for(size_t i = 0, size = ipToWatch.size(); i < size; ++i)
+	{
+		vector<string> splitString;
+
+		splitStringByDelimiter(&splitString, ipToWatch[i], ":");
+
+		ipCfg ipConfig = {
+			splitString[0],
+			(splitString.size() == 2) ? stoi(splitString[1]) : DEFAULT_PORT
+		};
+
+		ipAddressesToWatch.push_back(ipConfig);
+	}
 
 	return true;
 }
 
-void ConfigParser::addDisk(DiskCfg &diskcfg, vector<DiskCfg> *diskConfigs)
+void ConfigParser::addDisk(DiskCfg &diskcfg, vector<DiskCfg> &diskConfigs)
 {
 	//make sure we got a valid disk
 	//if we got a partition instead, validateDisk will change the diskName
 	//to it's parent disk instead (we only monitor disks not partitions)
 	if(validateDisk(diskcfg, m_partitionTable))
 	{
-		vector<DiskCfg>::const_iterator iter = diskConfigs->begin();
+		vector<DiskCfg>::const_iterator iter = diskConfigs.begin();
 
 		bool diskAlreadyAdded = false;
 
-		while(iter != diskConfigs->end())
+		while(iter != diskConfigs.end())
 		{
 			if(iter->diskName == diskcfg.diskName)
 			{
@@ -264,7 +323,7 @@ void ConfigParser::addDisk(DiskCfg &diskcfg, vector<DiskCfg> *diskConfigs)
 
 		if(!diskAlreadyAdded)
 		{
-			diskConfigs->push_back(diskcfg);
+			diskConfigs.push_back(diskcfg);
 		}
 	}
 	else
@@ -273,7 +332,7 @@ void ConfigParser::addDisk(DiskCfg &diskcfg, vector<DiskCfg> *diskConfigs)
 	}
 }
 
-void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> *diskConfigs)
+void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> &diskConfigs)
 {
 	cout << "Getting all the disks attached to the machine: ";
 	vector<string> disks;
@@ -291,15 +350,15 @@ void ConfigParser::getAllDisksToMonitor(vector<DiskCfg> *diskConfigs)
 			NO_SUSPEND_IF_NOT_IDLE, 
 			SPIN_DOWN_DISK_IF_IDLE};
 
-		diskConfigs->push_back(diskCfg);
+		diskConfigs.push_back(diskCfg);
 	}
 
 	cout << endl;
 }
 
 void ConfigParser::parseMultiChoiceSupportingAll(const string &input,
-										         vector<string> *output,
-										         vector<string> allAvailableOptions,
+										         vector<string> &output,
+										         vector<string> &allAvailableOptions,
 										         bool (*validator)(const string &))
 {
 	vector<string> splitString;
@@ -314,7 +373,7 @@ void ConfigParser::parseMultiChoiceSupportingAll(const string &input,
 		{
 			for(size_t j = 0, size = allAvailableOptions.size(); j < size; ++j)
 			{
-				output->push_back(allAvailableOptions[j]);
+				output.push_back(allAvailableOptions[j]);
 
 				return;
 			}
@@ -327,13 +386,13 @@ void ConfigParser::parseMultiChoiceSupportingAll(const string &input,
 
 		if(trimedField != "" && validator(trimedField))
 		{
-			output->push_back(trimedField);
+			output.push_back(trimedField);
 		}
 	}
 }
 
 void ConfigParser::parseMultiChoiceArgs(const string &input,
-		                                vector<string> *output,
+		                                vector<string> &output,
 		                                bool (*validator)(const string &))
 {
 	vector<string> splitString;
@@ -348,7 +407,7 @@ void ConfigParser::parseMultiChoiceArgs(const string &input,
 
 		if(trimedField != "" && validator(trimedField))
 		{
-			output->push_back(trimedField);
+			output.push_back(trimedField);
 		}
 	}
 }

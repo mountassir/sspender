@@ -1,14 +1,15 @@
-CMAKE_MINIMUM_REQUIRED ( VERSION 3.11 )
-CMAKE_POLICY ( VERSION 3.11 )
-PROJECT ( sspender VERSION 0.1.0 LANGUAGES CXX )
+CMAKE_MINIMUM_REQUIRED ( VERSION 3.20 )
+CMAKE_POLICY ( VERSION 3.20 )
+PROJECT ( sspender VERSION 1.1 LANGUAGES CXX )
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Threads REQUIRED)
 find_package(tomlplusplus CONFIG REQUIRED)
 
-ADD_EXECUTABLE ( sspender
+ADD_EXECUTABLE (sspender
   src/sspender.cpp
   src/ConfigParser.cpp
   src/Cpu.cpp
@@ -21,7 +22,7 @@ ADD_EXECUTABLE ( sspender
   src/utils.cpp
   )
 
-target_compile_features(sspender PRIVATE cxx_std_17)
+target_compile_features(sspender PRIVATE)
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(sspender PRIVATE -Wall -Wextra -Wpedantic)
 endif()

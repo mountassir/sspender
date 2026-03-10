@@ -47,7 +47,7 @@ class Manager
 {
 private:
 	Monitor m_monitor;                 //machine usage monitor
-	vector<string> m_ipsToWatch;       //don't suspend if any of these ips is online
+	vector<ipCfg> m_ipsToWatch;       //don't suspend if any of these ips is online
 	vector<DiskCfg> m_disksToMonitor;  //disk that will monitored
 	vector<CpuCfg> m_cpusToMonitor;    //cpus that will be monitored
 	vector<string> m_timesToWakeAt;    //the machine will be suspended until the earliest time in this vector
@@ -68,7 +68,7 @@ public:
 	void monitorSystemUsage();
 
 	//the machine will not be suspended if any of these ip address is found online
-	void setIpsToWatch(const vector<string> &ipToWatch);
+	void setIpsToWatch(const vector<ipCfg> &ipsToWatch);
 
 	//the usage of all the passed in disks will be monitored
 	void setDisksToMonitor(const vector<DiskCfg> &disksToMonitor);

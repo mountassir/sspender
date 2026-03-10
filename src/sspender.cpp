@@ -40,7 +40,8 @@ int main(int argc, char *argv[])
 		return(EXIT_SUCCESS);
 	}
 
-	vector<string> ipToWatch, wakeAt;
+	vector<string> wakeAt;
+	vector<ipCfg> ipToWatch;
 	vector<DiskCfg> disksToMonitor;
 	CpuCfg cpuConfig;
 	SLEEP_MODE sleepMode;
@@ -60,10 +61,10 @@ int main(int argc, char *argv[])
 	Manager manager;
 
 	bool configParsed = configParser.loadConfigs(filePath,
-			                                     &ipToWatch,
+			                                     ipToWatch,
 			                                     &cpuConfig,
-			                                     &disksToMonitor,
-			                                     &wakeAt,
+			                                     disksToMonitor,
+			                                     wakeAt,
 			                                     &sleepMode,
 			                                     &check_if_idle_every,
 												 &stop_monitoring_for,

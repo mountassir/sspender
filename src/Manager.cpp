@@ -18,12 +18,9 @@
 
 #include "Manager.h"
 
-void Manager::setIpsToWatch(const vector<string> &ipToWatch)
+void Manager::setIpsToWatch(const vector<ipCfg> &ipsToWatch)
 {
-	for(size_t i = 0, size = ipToWatch.size(); i < size; ++i)
-	{
-		m_ipsToWatch.push_back(ipToWatch[i]);
-	}
+	m_ipsToWatch = ipsToWatch;
 }
 
 void Manager::setDisksToMonitor(const vector<DiskCfg> &disksToMonitor)

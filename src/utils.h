@@ -32,10 +32,23 @@
 #include <chrono>
 #include <cmath>
 
+#include "constants.h"
+
 using namespace std;
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::time_point<std::chrono::system_clock> TimePoint;
+
+struct ipCfg
+{
+	string ipAddress;
+	int port;
+
+	friend std::ostream& operator<<(std::ostream& os, const ipCfg &ipCfgStruct) {
+        os << ipCfgStruct.ipAddress << (ipCfgStruct.port != DEFAULT_PORT ? ":" + std::to_string(ipCfgStruct.port) : "");
+        return os;
+    }
+};
 
 struct CpuCfg
 {

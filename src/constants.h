@@ -21,7 +21,7 @@
 
 using namespace std;
 
-const string  SSPENDER_VERSION = "1.1";
+const string  SSPENDER_VERSION = "1.2";
 
 enum SLEEP_MODE {STAND_BY, MEM, DISK};
 
@@ -36,6 +36,7 @@ const int DISK_LINE_NUM_OF_STATS = 11;
 const int NUM_OF_CPU_WORK_JIFFIES = 3;
 const string PING_IDENTIFIER = "from";    //string to look for in ping output if client is connected
 const string CONFIG_DELIMITER = ",";      //delimiter used in the config file
+const int DEFAULT_PORT = 0;               //default port to use if not specified in the config file
 
 //default settings
 const int SUSPEND_AFTER       = 15;         //suspend system if idle for more than (x minute)
