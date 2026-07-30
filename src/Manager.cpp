@@ -222,12 +222,12 @@ void Manager::suspendUntil(double currentTimeInMinutes, double until)
 	if(currentTimeInMinutes < until)
 	{
 		//suspend until time is on the same day
-		secondsToSleep = ((until - currentTimeInMinutes) - SUSPEND_OFFSET) * SECONDS_IN_MINUTE;
+		secondsToSleep = (until - currentTimeInMinutes) * SECONDS_IN_MINUTE;
 	}
 	else
 	{
 		//suspend until time is on the following day
-		secondsToSleep = (until + (TOTAL_MINUTES_IN_DAY - currentTimeInMinutes) - SUSPEND_OFFSET) * SECONDS_IN_MINUTE;
+		secondsToSleep = (until + (TOTAL_MINUTES_IN_DAY - currentTimeInMinutes)) * SECONDS_IN_MINUTE;
 	}
 
 	cout << "Got: current time in minutes (" << currentTimeInMinutes << "), suspend until(" << until << ").\n"

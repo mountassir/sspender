@@ -27,7 +27,6 @@ enum SLEEP_MODE {STAND_BY, MEM, DISK};
 
 const int STORAGE_READ_WRITE_LIMIT    = 400;    //#KB/s across all drives
 const int MONITORING_THREAD_FREQUENCY = 1000; //The frequency at which the threads will monitor usage (ms)
-const int SUSPEND_OFFSET      = 5;      //set the wake up time # minutes before to allow enough warm up time
 const int SECONDS_IN_MINUTE   = 60;
 const int TOTAL_MINUTES_IN_DAY = 1440;
 

@@ -7,7 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Threads REQUIRED)
-find_package(tomlplusplus CONFIG REQUIRED)
+
+include(FetchContent)
+FetchContent_Declare(
+  tomlplusplus
+  GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+  GIT_TAG        v3.4.0
+  GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(tomlplusplus)
 
 ADD_EXECUTABLE (sspender
   src/sspender.cpp
@@ -29,4 +37,5 @@ endif()
 
 target_link_libraries(sspender PRIVATE tomlplusplus::tomlplusplus Threads::Threads)
 
-INSTALL (TARGETS sspender DESTINATION /usr/local/bin)
+include(GNUInstallDirs)
+INSTALL (TARGETS sspender RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

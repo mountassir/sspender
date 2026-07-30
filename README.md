@@ -33,14 +33,11 @@ $ apt install hdparm
 
 # Building from Source:
 ### Configuring with CMake
-Compile and install sspender in /usr/local/bin
 ``` bash
 $ cd sspender
-$ mkdir build
-$ cd build
-$ cmake ..
-$ make
-$ sudo make install
+$ cmake -S . -B build
+$ cmake --build  build
+$ sudo make -C build install // Install to local bin
 ```
 
 # Usage:
